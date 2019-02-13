@@ -1,0 +1,18 @@
+{
+    "name": "meet-lang",
+    "version": "0.0.1",
+    "description": "Meet programming language",
+    "main": "dist/meet.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "watch": "babel ./core -d dist -w"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "@babel/cli": "^7.2.3",
+        "@babel/core": "^7.2.2",
+        "@babel/preset-env": "^7.2.3"
+    }
+}

@@ -1,0 +1,81 @@
+####################################
+
+fuck a -> 200;               # 测试赋值语句 #
+fuck b -> 520;               # 测试赋值语句 #
+
+# print -> a; #              # 测试注释语句 #
+print -> a;                  # 测试输出语句 #
+print -> b;                  # 测试表达式语句 #
+printLine;                   # 测试输出换行语句 #
+printLine -> a;              # 测试输出换行语句 #
+printLine -> b;              # 测试输出换行语句 #
+printLine;
+
+####################################
+
+if a > b {                   # 测试分支语句 #
+    printLine -> "max is a";
+} else {
+    printLine -> "max is b";
+}
+
+if a == b {
+    printLine -> "相等";
+}
+
+if a >= b {
+    printLine -> "大于等于";
+}
+
+if a != b {
+    print -> "a 不等于 ";
+    printLine -> b;
+}
+
+printLine;
+
+####################################
+
+fuck m -> 5;
+printLine -> m;              # 5 #
+
+minus -> m;
+printLine -> m;              # 4 #
+
+plus -> m;
+printLine -> m;              # 5 #
+
+printLine;
+
+####################################
+
+fuck c -> 0;
+
+while c <= 10 {               # 测试循环语句 #
+    printLine -> c;
+    plus -> c;
+}
+
+printLine -> c;              # 10 #
+printLine;
+
+####################################
+
+fuck condition -> 20;
+fuck ends -> 10;
+
+while condition > ends {                # 测试嵌套调用语句 #
+    minus -> condition;
+
+    if condition == 15 {
+        printLine -> "== 相等 ==";
+    }
+
+    if condition < 15 {
+        print -> "小于 15: ";
+        printLine -> condition;
+    } else {
+        print -> "大于 15: ";
+        printLine -> condition;
+    }
+}
