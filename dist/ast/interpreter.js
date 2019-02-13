@@ -76,7 +76,8 @@ function () {
     key: "evalPrintStatementNode",
     value: function evalPrintStatementNode() {
       if (this.node.type == 'string') {
-        this.logWithOutLine(this.node.name);
+        this.logWithOutLine(this.node.value);
+        this.current++;
         return;
       }
 
@@ -88,7 +89,7 @@ function () {
         if (typeof value == 'undefined') {
           throw new Error("\u627E\u4E0D\u5230\u53D8\u91CF\uFF1A".concat(name));
         } else {
-          this.logWithLine(value);
+          this.logWithOutLine(value);
         }
       } else {
         this.logWithOutLine(name);
@@ -104,7 +105,8 @@ function () {
     key: "evalPrintLineStatementNode",
     value: function evalPrintLineStatementNode() {
       if (this.node.type == 'string') {
-        this.logWithLine(this.node.name);
+        this.logWithLine(this.node.value);
+        this.current++;
         return;
       }
 
@@ -317,7 +319,7 @@ function () {
   }, {
     key: "logWithLine",
     value: function logWithLine(v) {
-      console.log(v);
+      process.stdout.write(v + '\n');
     }
     /**
      * 打印但是不换行

@@ -26,9 +26,10 @@ export class FuckStatement {
 
 export class PrintStatement {
 
-    constructor(type, name) {
+    constructor(type, name, value) {
         this.type = type;
         this.name = name;
+        this.value = value;
     }
 
     toString() {
@@ -38,9 +39,10 @@ export class PrintStatement {
 
 export class PrintLineStatement {
 
-    constructor(type, name) {
+    constructor(type, name, value) {
         this.type = type;
         this.name = name;
+        this.value = value;
     }
 
     toString() {

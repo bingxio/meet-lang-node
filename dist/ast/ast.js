@@ -59,11 +59,12 @@ exports.FuckStatement = FuckStatement;
 var PrintStatement =
 /*#__PURE__*/
 function () {
-  function PrintStatement(type, name) {
+  function PrintStatement(type, name, value) {
     _classCallCheck(this, PrintStatement);
 
     this.type = type;
     this.name = name;
+    this.value = value;
   }
 
   _createClass(PrintStatement, [{
@@ -81,11 +82,12 @@ exports.PrintStatement = PrintStatement;
 var PrintLineStatement =
 /*#__PURE__*/
 function () {
-  function PrintLineStatement(type, name) {
+  function PrintLineStatement(type, name, value) {
     _classCallCheck(this, PrintLineStatement);
 
     this.type = type;
     this.name = name;
+    this.value = value;
   }
 
   _createClass(PrintLineStatement, [{

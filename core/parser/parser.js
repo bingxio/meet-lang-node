@@ -98,7 +98,7 @@ export class Parser {
         let valueToken = this.tokens[++ this.current];
 
         if (valueToken.type == 'string') {
-            printStmt = new PrintStatement('string', valueToken.value);
+            printStmt = new PrintStatement('string', undefined, valueToken.value);
             
             this.current ++;
             this.parseSemicolon();
@@ -110,7 +110,7 @@ export class Parser {
         
         this.parseVariableType(valueToken);
 
-        printStmt = new PrintStatement('name', valueToken.value);
+        printStmt = new PrintStatement('name', valueToken.value, undefined);
 
         this.current ++;
         this.parseSemicolon();
@@ -141,7 +141,7 @@ export class Parser {
         let valueToken = this.tokens[++ this.current];
 
         if (valueToken.type == 'string') {
-            printLineStmt = new PrintLineStatement('string', valueToken.value);
+            printLineStmt = new PrintLineStatement('string', undefined, valueToken.value);
 
             this.current ++;
             this.parseSemicolon();
@@ -153,7 +153,7 @@ export class Parser {
 
         this.parseVariableType(valueToken);
 
-        printLineStmt = new PrintLineStatement('name', valueToken.value);
+        printLineStmt = new PrintLineStatement('name', valueToken.value, undefined);
 
         this.current ++;
         this.parseSemicolon();

@@ -121,7 +121,7 @@ function () {
       var valueToken = this.tokens[++this.current];
 
       if (valueToken.type == 'string') {
-        printStmt = new _ast.PrintStatement('string', valueToken.value);
+        printStmt = new _ast.PrintStatement('string', undefined, valueToken.value);
         this.current++;
         this.parseSemicolon();
         this.current++;
@@ -130,7 +130,7 @@ function () {
       }
 
       this.parseVariableType(valueToken);
-      printStmt = new _ast.PrintStatement('name', valueToken.value);
+      printStmt = new _ast.PrintStatement('name', valueToken.value, undefined);
       this.current++;
       this.parseSemicolon();
       this.current++;
@@ -158,7 +158,7 @@ function () {
       var valueToken = this.tokens[++this.current];
 
       if (valueToken.type == 'string') {
-        printLineStmt = new _ast.PrintLineStatement('string', valueToken.value);
+        printLineStmt = new _ast.PrintLineStatement('string', undefined, valueToken.value);
         this.current++;
         this.parseSemicolon();
         this.current++;
@@ -167,7 +167,7 @@ function () {
       }
 
       this.parseVariableType(valueToken);
-      printLineStmt = new _ast.PrintLineStatement('name', valueToken.value);
+      printLineStmt = new _ast.PrintLineStatement('name', valueToken.value, undefined);
       this.current++;
       this.parseSemicolon();
       this.current++;
