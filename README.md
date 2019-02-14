@@ -1,5 +1,7 @@
 
-![](carbon.png)
+<div align='center'>
+    <img src='art.png'/>
+</div>
 
 ## Meet Programming Language
 
