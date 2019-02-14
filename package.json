@@ -1,15 +1,15 @@
 {
     "name": "meet-lang",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "description": "Meet programming language",
-    "main": "./dist/meet.js",
+    "main": "dist/meet.js",
     "bin": {
-        "meet": "node ./dist/meet.js"
+        "meet": "node dist/meet.js"
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "watch": "babel ./core -d dist -w",
-        "meet": "node ./dist/meet.js"
+        "meet": "node dist/meet.js"
     },
     "keywords": [
         "meet",
