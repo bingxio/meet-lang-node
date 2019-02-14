@@ -47,12 +47,12 @@ export class Lexer {
                 continue;
             }
     
-            if (char == '"') {
+            if (char == '\'') {
                 let value = '';
     
                 char = this.code[++ this.current];
     
-                while (char != '"') {
+                while (char != '\'') {
                     value += char;
                     char = this.code[++ this.current];
                 }
@@ -65,37 +65,40 @@ export class Lexer {
     
             /////////////////////////////////////////////
     
-            if (char == '-' && this.code[++ this.current] == '>') {
-                this.newToken('operator', '->');            
+            // if (char == '-' && this.code[++ this.current] == '>') {
+            //     this.newToken('operator', '->');            
     
+            //     this.current ++;
+            //     continue;
+            // }
+
+            if ((char == '+' || char == '*' || char == '/' || char == '>' || 
+                 char == '<' || char == '!' || char == '=') && this.code[++ this.current] == '=') {
+                this.newToken('operator', char += '=');
+
                 this.current ++;
                 continue;
             }
-    
-            if (char == '>' && this.code[++ this.current] == '=') {
-                this.newToken('operator', '>=')
-    
+
+            if (char == '-') {
                 this.current ++;
-                continue;
-            }
-    
-            if (char == '<' && this.code[++ this.current] == '=') {
-                this.newToken('operator', '<=')
-    
-                this.current ++;
-                continue;
-            }
-    
-            if (char == '!' && this.code[++ this.current] == '=') {
-                this.newToken('operator', '!=')
-    
-                this.current ++;
-                continue;
-            }
-    
-            if (char == '=' && this.code[++ this.current] == '=') {
-                this.newToken('operator', '==')
-    
+
+                if (this.code[this.current] == '>') {
+                    this.newToken('operator', '->');
+
+                    this.current ++;
+                    continue;
+                }
+
+                if (this.code[this.current] == '=') {
+                    this.newToken('operator', '-=');
+
+                    this.current ++;
+                    continue;
+                }
+
+                this.newToken('operator', '-');
+
                 this.current ++;
                 continue;
             }
@@ -104,8 +107,8 @@ export class Lexer {
     
             if (char == '+' || char == '-' || char == '*' || char == '/' ||
                 char == ';' || char == ',' || char == '>' || char == '<' ||
-                char == '{' || char == '}' || char == '=') {
-                this.newToken('operator', char); 
+                char == '{' || char == '}' || char == '=' || char == '%') {
+                this.newToken('operator', char);
     
                 this.current ++;
                 continue;

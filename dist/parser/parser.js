@@ -34,7 +34,7 @@ function () {
       var ast = {
         type: 'Program',
         body: []
-      }; // console.log(this.parseBinaryExpressionStatement('12 + 50'));
+      };
 
       while (this.current < this.tokens.length && this.currentToken().type != 'EOF') {
         this.token = this.tokens[this.current];
@@ -89,7 +89,8 @@ function () {
       }
     }
     /**
-     * fuck a -> 200
+     * fuck a -> 200;
+     * fuck a -> (20 + 5);
      */
 
   }, {
@@ -100,7 +101,39 @@ function () {
       this.current++;
       this.isPointer();
       var valueToken = this.tokens[++this.current];
-      this.parseVariableType(valueToken);
+      var valueExp = [];
+      var valueExpressionStmt = new _ast.BinaryExpressionStatement();
+
+      if (valueToken.value == '(') {
+        this.current++;
+
+        while (!this.isToken(')')) {
+          valueExp.push(this.tokens[this.current++]);
+        }
+
+        if (typeof valueExp != 'undefined') {
+          if (valueExp.length > 3 || valueExp.length < 3) {
+            throw new SyntaxError("\u64CD\u4F5C\u6570\u9519\u8BEF\uFF1A".concat(valueExp));
+          }
+        }
+
+        valueExpressionStmt.left = valueExp[0];
+        valueExpressionStmt.operator = valueExp[1];
+        valueExpressionStmt.right = valueExp[2];
+      } else {
+        this.parseVariableType(valueToken);
+      }
+
+      if (valueExpressionStmt.operator != undefined) {
+        var _fuckStmt = new _ast.FuckStatement(nameToken.value, valueExpressionStmt);
+
+        this.current++;
+        this.parseSemicolon();
+        this.current++;
+        this.line++;
+        return _fuckStmt;
+      }
+
       var fuckStmt = new _ast.FuckStatement(nameToken.value, valueToken.value);
       this.current++;
       this.parseSemicolon();
@@ -109,7 +142,7 @@ function () {
       return fuckStmt;
     }
     /**
-     * print -> a
+     * print -> a;
      */
 
   }, {
@@ -175,32 +208,6 @@ function () {
       return printLineStmt;
     }
     /**
-     * 解析二元表达式、检查运算符个数
-     */
-
-  }, {
-    key: "parseBinaryExpressionStatement",
-    value: function parseBinaryExpressionStatement(exp) {
-      var current = 0;
-      var hasOperatorCounts = 0;
-
-      while (current < exp.length) {
-        var char = exp[current];
-
-        if (char == '+' || char == '-' || char == '*' || char == '/' || char == '%') {
-          hasOperatorCounts++;
-        }
-
-        current++;
-      }
-
-      if (hasOperatorCounts > 1) {
-        throw new SyntaxError('仅支持二元表达式');
-      }
-
-      return hasOperatorCounts == 1;
-    }
-    /**
      * minus -> a;
      */
 
@@ -244,6 +251,10 @@ function () {
      * } else {
      *    print -> b;
      * }
+     * 
+     * if (a % 2) == 0 {
+     *    print -> a;
+     * }
      */
 
   }, {
@@ -253,18 +264,38 @@ function () {
       var conditionStmt = [];
       var establishStmt = [];
       var contraryStmt = [];
+      var conditionHasParenStmt = [];
+      var conditionExpressionStmt = new _ast.BinaryExpressionStatement();
 
       while (!this.isToken('{')) {
-        conditionStmt.push(this.tokens[this.current]);
-        this.current++;
+        if (this.isToken('(')) {
+          this.current++;
+
+          while (!this.isToken(')')) {
+            conditionHasParenStmt.push(this.tokens[this.current++]);
+          }
+
+          if (typeof conditionHasParenStmt != 'undefined') {
+            if (conditionHasParenStmt.length > 3 || conditionHasParenStmt.length < 3) {
+              throw new SyntaxError("\u64CD\u4F5C\u6570\u9519\u8BEF\uFF1A".concat(conditionHasParenStmt));
+            }
+          }
+
+          conditionExpressionStmt.left = conditionHasParenStmt[0];
+          conditionExpressionStmt.operator = conditionHasParenStmt[1];
+          conditionExpressionStmt.right = conditionHasParenStmt[2];
+          conditionStmt.push(conditionExpressionStmt);
+          this.current++;
+        } else {
+          conditionStmt.push(this.tokens[this.current++]);
+        }
       }
 
       if (conditionStmt.length > 3) {
         throw new SyntaxError("\u4EC5\u652F\u6301\u4E8C\u5143\u8868\u8FBE\u5F0F\uFF0C\u6761\u4EF6\uFF1A".concat(conditionStmt));
       }
 
-      this.current++;
-      this.refreshToken(this.current);
+      this.refreshToken(this.current++);
 
       while (!this.isToken('}')) {
         this.parseWithTokenType(establishStmt);
@@ -306,18 +337,38 @@ function () {
       this.current++;
       var conditionStmt = [];
       var establishStmt = [];
+      var conditionHasParenStmt = [];
+      var conditionExpressionStmt = new _ast.BinaryExpressionStatement();
 
       while (!this.isToken('{')) {
-        conditionStmt.push(this.tokens[this.current]);
-        this.current++;
+        if (this.isToken('(')) {
+          this.current++;
+
+          while (!this.isToken(')')) {
+            conditionHasParenStmt.push(this.tokens[this.current++]);
+          }
+
+          if (typeof conditionHasParenStmt != 'undefined') {
+            if (conditionHasParenStmt.length > 3 || conditionHasParenStmt.length < 3) {
+              throw new SyntaxError("\u64CD\u4F5C\u6570\u9519\u8BEF\uFF1A".concat(conditionHasParenStmt));
+            }
+          }
+
+          conditionExpressionStmt.left = conditionHasParenStmt[0];
+          conditionExpressionStmt.operator = conditionHasParenStmt[1];
+          conditionExpressionStmt.right = conditionHasParenStmt[2];
+          conditionStmt.push(conditionExpressionStmt);
+          this.current++;
+        } else {
+          conditionStmt.push(this.tokens[this.current++]);
+        }
       }
 
       if (conditionStmt.length > 3) {
         throw new SyntaxError("\u4EC5\u652F\u6301\u4E8C\u5143\u8868\u8FBE\u5F0F\uFF0C\u6761\u4EF6\uFF1A".concat(conditionStmt));
       }
 
-      this.current++;
-      this.refreshToken(this.current);
+      this.refreshToken(this.current++);
 
       while (!this.isToken('}')) {
         this.parseWithTokenType(establishStmt);

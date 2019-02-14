@@ -1,5 +1,5 @@
 
-import { FuckStatement, PrintStatement, PrintLineStatement, IfStatement, WhileStatement, MinusStatement, PlusStatement } from '../ast/ast';
+import { FuckStatement, PrintStatement, PrintLineStatement, IfStatement, WhileStatement, MinusStatement, PlusStatement, BinaryExpressionStatement } from '../ast/ast';
 
 let LETTER = /[a-z|A-Z]/;
 let NUMBER = /[0-9]/;
@@ -18,8 +18,6 @@ export class Parser {
             type: 'Program',
             body: []
         };
-
-        // console.log(this.parseBinaryExpressionStatement('12 + 50'));
 
         while (this.current < this.tokens.length && this.currentToken().type != 'EOF') {
             this.token = this.tokens[this.current];
@@ -64,7 +62,8 @@ export class Parser {
     }
 
     /**
-     * fuck a -> 200
+     * fuck a -> 200;
+     * fuck a -> (20 + 5);
      */
     parseFuckStatement() {
         let nameToken = this.tokens[++ this.current];
@@ -74,8 +73,39 @@ export class Parser {
         this.isPointer();
 
         let valueToken = this.tokens[++ this.current];
+        let valueExp = [];
+        let valueExpressionStmt = new BinaryExpressionStatement();
 
-        this.parseVariableType(valueToken);
+        if (valueToken.value == '(') {
+            this.current ++;
+            
+            while (! this.isToken(')')) {
+                valueExp.push(this.tokens[this.current ++]);
+            }
+
+            if (typeof(valueExp) != 'undefined') {
+                if (valueExp.length > 3 || valueExp.length < 3) {
+                    throw new SyntaxError(`操作数错误：${valueExp}`);
+                }
+            }
+
+            valueExpressionStmt.left = valueExp[0];
+            valueExpressionStmt.operator = valueExp[1];
+            valueExpressionStmt.right = valueExp[2];
+        } else {
+            this.parseVariableType(valueToken);
+        }        
+
+        if (valueExpressionStmt.operator != undefined) {
+            let fuckStmt = new FuckStatement(nameToken.value, valueExpressionStmt);
+
+            this.current ++;
+            this.parseSemicolon();
+            this.current ++;
+            this.line ++;
+
+            return fuckStmt;
+        }
 
         let fuckStmt = new FuckStatement(nameToken.value, valueToken.value);
 
@@ -88,7 +118,7 @@ export class Parser {
     }
 
     /**
-     * print -> a
+     * print -> a;
      */
     parsePrintStatement() {
         this.current ++;
@@ -164,31 +194,6 @@ export class Parser {
     }
 
     /**
-     * 解析二元表达式、检查运算符个数
-     */
-    parseBinaryExpressionStatement(exp) {
-        let current = 0;
-        let hasOperatorCounts = 0;
-
-        while (current < exp.length) {
-            let char = exp[current];
-
-            if (char == '+' || char == '-' ||
-                char == '*' || char == '/' ||
-                char == '%') {
-                    hasOperatorCounts ++;
-                }
-            current ++;
-        }
-
-        if (hasOperatorCounts > 1) {
-            throw new SyntaxError('仅支持二元表达式');
-        }
-
-        return hasOperatorCounts == 1;
-    }
-
-    /**
      * minus -> a;
      */
     parseMinusStatement() {
@@ -238,6 +243,10 @@ export class Parser {
      * } else {
      *    print -> b;
      * }
+     * 
+     * if (a % 2) == 0 {
+     *    print -> a;
+     * }
      */
     parseIfStatement() {
         this.current ++;
@@ -246,17 +255,40 @@ export class Parser {
         let establishStmt = [];
         let contraryStmt = [];
 
+        let conditionHasParenStmt = [];
+        let conditionExpressionStmt = new BinaryExpressionStatement();
+
         while (! this.isToken('{')) {
-            conditionStmt.push(this.tokens[this.current]);
-            this.current ++;
-        }        
+            if (this.isToken('(')) {
+                this.current ++;
+
+                while (! this.isToken(')')) {
+                    conditionHasParenStmt.push(this.tokens[this.current ++]);
+                }
+
+                if (typeof(conditionHasParenStmt) != 'undefined') {
+                    if (conditionHasParenStmt.length > 3 || conditionHasParenStmt.length < 3) {
+                        throw new SyntaxError(`操作数错误：${conditionHasParenStmt}`);
+                    }
+                }
+
+                conditionExpressionStmt.left = conditionHasParenStmt[0];
+                conditionExpressionStmt.operator = conditionHasParenStmt[1];
+                conditionExpressionStmt.right = conditionHasParenStmt[2];
+
+                conditionStmt.push(conditionExpressionStmt);
+
+                this.current ++;
+            } else {
+                conditionStmt.push(this.tokens[this.current ++]);
+            }
+        }
 
         if (conditionStmt.length > 3) {
             throw new SyntaxError(`仅支持二元表达式，条件：${conditionStmt}`);
         }
 
-        this.current ++;
-        this.refreshToken(this.current);
+        this.refreshToken(this.current ++);
 
         while (! this.isToken('}')) {
             this.parseWithTokenType(establishStmt);
@@ -300,17 +332,40 @@ export class Parser {
         let conditionStmt = [];
         let establishStmt = [];
 
+        let conditionHasParenStmt = [];
+        let conditionExpressionStmt = new BinaryExpressionStatement();
+
         while (! this.isToken('{')) {
-            conditionStmt.push(this.tokens[this.current]);
-            this.current ++;
+            if (this.isToken('(')) {
+                this.current ++;
+
+                while (! this.isToken(')')) {
+                    conditionHasParenStmt.push(this.tokens[this.current ++]);
+                }
+
+                if (typeof(conditionHasParenStmt) != 'undefined') {
+                    if (conditionHasParenStmt.length > 3 || conditionHasParenStmt.length < 3) {
+                        throw new SyntaxError(`操作数错误：${conditionHasParenStmt}`);
+                    }
+                }
+
+                conditionExpressionStmt.left = conditionHasParenStmt[0];
+                conditionExpressionStmt.operator = conditionHasParenStmt[1];
+                conditionExpressionStmt.right = conditionHasParenStmt[2];
+
+                conditionStmt.push(conditionExpressionStmt);
+
+                this.current ++;
+            } else {
+                conditionStmt.push(this.tokens[this.current ++]);
+            }
         }
 
         if (conditionStmt.length > 3) {
             throw new SyntaxError(`仅支持二元表达式，条件：${conditionStmt}`);
         }
 
-        this.current ++;
-        this.refreshToken(this.current);
+        this.refreshToken(this.current ++);
 
         while (! this.isToken('}')) {
             this.parseWithTokenType(establishStmt);

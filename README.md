@@ -35,19 +35,22 @@ REPL:
 ```
 Meet Programming Language REPL - Turaiiao 2019 - Email: 1171840237@qq.com
 > fuck a -> 20;
-> fuck b -> "Hello World";
-> print -> a;
+> fuck b -> 'Hello World';
+> fuck c -> (2 - 10);
+> printLine -> a;
 20
-> print -> b;
+> printLine -> b;
 Hello World
->
+> printLine -> c;
+-8
+> 
 ```
 
 The third way, you can run the specified file.  
 Of course, you can also add parameters like `-token` or `-ast` or `-all` to show token or ast syntax trees.
 
 ```
-node dist/meet.js sample.meet
+node dist/meet.js [-token / -ast / -all] sample.meet
 ```
 
 ### Comment
@@ -63,7 +66,8 @@ fuck a -> 20;
 
 ```
 fuck a -> 20;
-fuck b -> "Hello World";
+fuck b -> 'Hello World';
+fuck c -> (20 + 20);        # with expression #
 ```
 
 It defines variables to variable tables.
@@ -71,10 +75,10 @@ It defines variables to variable tables.
 ### Print to screen
 
 ```
-print -> 666;               # print but no line feed #
-printLine -> 888;           # print and line feed #
-printLine;                  # individual print line feed #
-printLine -> "Hello World";
+print -> 666;                       # print but no line feed #
+printLine -> 888;                   # print and line feed #
+printLine;                          # individual print line feed #
+printLine -> 'Hello World';
 
 Output:
 666888
@@ -89,45 +93,59 @@ fuck a -> 20;
 fuck b -> 50;
 
 if a == b {
-    printLine -> "Equal";
+    printLine -> 'Equal';
 }
 
 if a > b {
-    printLine -> "max is a";
+    print -> 'max is a, ';
 } else {
-    printLine -> "max is b";
+    print -> 'max is b, ';
+}
+
+if (a += 30) == b {
+    printLine -> 'oh, plus 30 to equal b.';
 }
 
 Output:
-Equal
-max is b
+max is b, oh, plus 30 to equal b.
 ```
 
 ### Loop statement
 ```
-fuck condition -> 0;
+fuck tom -> 0;
+fuck frank -> 50;
 
-while condition < 10 {
-    plus -> condition;      # plus one #
-
-    if condition == 5 {
-        printLine -> "Equal 5";
-    } else {
-        printLine -> condition;
+while (tom += 1) < frank {
+    if (tom % 2) == 0 {
+        printLine -> tom;
     }
 }
 
 Output:
-1
 2
-3
 4
-Equal 5
 6
-7
 8
-9
 10
+12
+14
+16
+18
+20
+22
+24
+26
+28
+30
+32
+34
+36
+38
+40
+42
+44
+46
+48
 ```
 
 ### Magic Identifier

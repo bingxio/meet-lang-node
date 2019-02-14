@@ -65,6 +65,11 @@ function () {
     value: function evalFuckStatementNode() {
       var name = this.node.name;
       var value = this.node.value;
+
+      if (value instanceof _ast.BinaryExpressionStatement) {
+        value = this.evalBinaryExpressionNode([value.left, value.operator, value.right]);
+      }
+
       this.env.set(name, value);
       this.current++;
     }
@@ -179,52 +184,92 @@ function () {
       this.current++;
     }
     /**
-     * 解析二元判断表达式
+     * 解析表达式、返回布尔值或表达式值
      */
 
   }, {
     key: "evalBinaryExpressionNode",
     value: function evalBinaryExpressionNode(ast) {
-      var left = ast[0].value;
-      var operator = ast[1].value;
-      var right = ast[2].value;
+      var evalLeft = ast[0];
+      var evalOperator = ast[1];
+      var evalRight = ast[2];
 
-      if (this.isVariableType(left)) {
-        left = this.env.get(left);
+      if (evalLeft instanceof _ast.BinaryExpressionStatement) {
+        evalLeft = this.evalBinaryExpressionNode([evalLeft.left, evalLeft.operator, evalLeft.right]);
+        evalOperator = ast[1].value;
+        evalRight = ast[2].value;
+      } else if (evalRight instanceof _ast.BinaryExpressionStatement) {
+        evalLeft = ast[0].value;
+        evalOperator = ast[1].value;
+        evalRight = this.evalBinaryExpressionNode([evalRight.left, evalRight.operator, evalRight.right]);
+      } else {
+        evalLeft = ast[0].value;
+        evalOperator = ast[1].value;
+        evalRight = ast[2].value;
       }
 
-      if (this.isVariableType(right)) {
-        right = this.env.get(right);
+      if (this.isVariableType(evalLeft)) evalLeft = this.env.get(evalLeft);
+      if (this.isVariableType(evalRight)) evalRight = this.env.get(evalRight);
+
+      if (typeof evalLeft == 'undefined' || typeof evalRight == 'undefined') {
+        throw new TypeError("\u672A\u77E5\u7684\u53D8\u91CF\u7C7B\u578B\uFF1Aleft = ".concat(evalLeft, ", operator = ").concat(evalOperator, ", right = ").concat(evalRight));
       }
 
-      if (typeof left == 'undefined' || typeof right == 'undefined') {
-        throw new TypeError("\u672A\u77E5\u7684\u53D8\u91CF\u7C7B\u578B\uFF1Aleft = ".concat(left, ", right = ").concat(right));
-      }
+      evalLeft = parseInt(evalLeft);
+      evalRight = parseInt(evalRight);
 
-      left = parseInt(left);
-      right = parseInt(right);
-
-      switch (operator) {
+      switch (evalOperator) {
         case '>':
-          return left > right;
+          return evalLeft > evalRight;
 
         case '<':
-          return left < right;
+          return evalLeft < evalRight;
 
         case '>=':
-          return left >= right;
+          return evalLeft >= evalRight;
 
         case '<=':
-          return left <= right;
+          return evalLeft <= evalRight;
 
         case '==':
-          return left == right;
+          return evalLeft == evalRight;
 
         case '!=':
-          return left != right;
+          return evalLeft != evalRight;
+
+        case '+':
+          return evalLeft + evalRight;
+
+        case '-':
+          return evalLeft - evalRight;
+
+        case '*':
+          return evalLeft * evalRight;
+
+        case '/':
+          return evalLeft / evalRight;
+
+        case '%':
+          return evalLeft % evalRight;
+
+        case '+=':
+          this.env.set(ast[0].value, evalLeft += evalRight);
+          return ast[0].value;
+
+        case '-=':
+          this.env.set(ast[0].value, evalLeft -= evalRight);
+          return ast[0].value;
+
+        case '*=':
+          this.env.set(ast[0].value, evalLeft *= evalRight);
+          return ast[0].value;
+
+        case '/=':
+          this.env.set(ast[0].value, evalLeft /= evalRight);
+          return ast[0].value;
 
         default:
-          throw new TypeError("\u672A\u77E5\u7684\u64CD\u4F5C\u6570\uFF1A".concat(operator));
+          throw new TypeError("\u672A\u77E5\u7684\u64CD\u4F5C\u6570\uFF1A".concat(evalOperator));
       }
     }
     /**

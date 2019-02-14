@@ -61,11 +61,11 @@ function () {
           continue;
         }
 
-        if (char == '"') {
+        if (char == '\'') {
           var value = '';
           char = this.code[++this.current];
 
-          while (char != '"') {
+          while (char != '\'') {
             value += char;
             char = this.code[++this.current];
           }
@@ -74,40 +74,41 @@ function () {
           this.current++;
           continue;
         } /////////////////////////////////////////////
+        // if (char == '-' && this.code[++ this.current] == '>') {
+        //     this.newToken('operator', '->');            
+        //     this.current ++;
+        //     continue;
+        // }
 
 
-        if (char == '-' && this.code[++this.current] == '>') {
-          this.newToken('operator', '->');
+        if ((char == '+' || char == '*' || char == '/' || char == '>' || char == '<' || char == '!' || char == '=') && this.code[++this.current] == '=') {
+          this.newToken('operator', char += '=');
           this.current++;
           continue;
         }
 
-        if (char == '>' && this.code[++this.current] == '=') {
-          this.newToken('operator', '>=');
+        if (char == '-') {
           this.current++;
-          continue;
-        }
 
-        if (char == '<' && this.code[++this.current] == '=') {
-          this.newToken('operator', '<=');
-          this.current++;
-          continue;
-        }
+          if (this.code[this.current] == '>') {
+            this.newToken('operator', '->');
+            this.current++;
+            continue;
+          }
 
-        if (char == '!' && this.code[++this.current] == '=') {
-          this.newToken('operator', '!=');
-          this.current++;
-          continue;
-        }
+          if (this.code[this.current] == '=') {
+            this.newToken('operator', '-=');
+            this.current++;
+            continue;
+          }
 
-        if (char == '=' && this.code[++this.current] == '=') {
-          this.newToken('operator', '==');
+          this.newToken('operator', '-');
           this.current++;
           continue;
         } /////////////////////////////////////////////
 
 
-        if (char == '+' || char == '-' || char == '*' || char == '/' || char == ';' || char == ',' || char == '>' || char == '<' || char == '{' || char == '}' || char == '=') {
+        if (char == '+' || char == '-' || char == '*' || char == '/' || char == ';' || char == ',' || char == '>' || char == '<' || char == '{' || char == '}' || char == '=' || char == '%') {
           this.newToken('operator', char);
           this.current++;
           continue;
