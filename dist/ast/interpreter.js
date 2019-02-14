@@ -14,6 +14,8 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 var LETTERS = /[a-z|A-Z]/;
+var LIST_LPAREN = /[\[]/;
+var LIST_RPAREN = /[\]]/;
 
 var Interpreter =
 /*#__PURE__*/
@@ -52,6 +54,8 @@ function () {
         this.evalMinusStatementNode();
       } else if (node instanceof _ast.PlusStatement) {
         this.evalPlusStatementNode();
+      } else if (node instanceof _ast.ForEachStatement) {
+        this.evalForEachStatementNode();
       } else {
         throw new TypeError("\u89E3\u91CA\u5931\u8D25\uFF0C\u672A\u77E5\u7684\u7C7B\u578B\uFF1A".concat(node.toString()));
       }
@@ -68,6 +72,12 @@ function () {
 
       if (value instanceof _ast.BinaryExpressionStatement) {
         value = this.evalBinaryExpressionNode([value.left, value.operator, value.right]);
+      }
+
+      if (value instanceof _ast.ListStatement) {
+        this.env.set(name, [value.type, value.value]);
+        this.current++;
+        return;
       }
 
       this.env.set(name, value);
@@ -87,6 +97,13 @@ function () {
       }
 
       var name = this.node.name;
+
+      if (LIST_LPAREN.test(name) && LIST_RPAREN.test(name)) {
+        var v = this.evalListExpressionNode(name);
+        this.logWithOutLine(v);
+        this.current++;
+        return;
+      }
 
       if (this.isVariableType(name)) {
         var value = this.env.get(name);
@@ -119,6 +136,13 @@ function () {
 
       if (typeof name == 'undefined') {
         this.logWithLine('');
+        this.current++;
+        return;
+      }
+
+      if (LIST_LPAREN.test(name) && LIST_RPAREN.test(name)) {
+        var v = this.evalListExpressionNode(name);
+        this.logWithLine(v);
         this.current++;
         return;
       }
@@ -184,6 +208,33 @@ function () {
       this.current++;
     }
     /**
+     * { name: 'list' }
+     */
+
+  }, {
+    key: "evalForEachStatementNode",
+    value: function evalForEachStatementNode() {
+      var name = this.node.name;
+
+      if (!this.isVariableType(name)) {
+        throw new TypeError("\u672A\u77E5\u7684\u5217\u8868\u540D\uFF1A".concat(name));
+      }
+
+      var list = this.env.get(name);
+      var outPut = '';
+
+      if (typeof list == 'undefined') {
+        throw new SyntaxError("\u627E\u4E0D\u5230\u5217\u8868\uFF1A".concat(name));
+      }
+
+      list[1].forEach(function (v) {
+        if (v != ',') outPut += v;
+        outPut += ' ';
+      });
+      this.logWithLine(outPut);
+      this.current++;
+    }
+    /**
      * 解析表达式、返回布尔值或表达式值
      */
 
@@ -202,6 +253,14 @@ function () {
         evalLeft = ast[0].value;
         evalOperator = ast[1].value;
         evalRight = this.evalBinaryExpressionNode([evalRight.left, evalRight.operator, evalRight.right]);
+      } else if (evalLeft.type == 'list') {
+        evalLeft = this.evalListExpressionNode(evalLeft.value);
+
+        if (evalRight.type == 'list') {
+          evalRight = this.evalListExpressionNode(evalRight.value);
+        }
+
+        evalOperator = ast[1].value;
       } else {
         evalLeft = ast[0].value;
         evalOperator = ast[1].value;
@@ -271,6 +330,25 @@ function () {
         default:
           throw new TypeError("\u672A\u77E5\u7684\u64CD\u4F5C\u6570\uFF1A".concat(evalOperator));
       }
+    }
+    /**
+     * 根据列表名，返回列表值
+     * 
+     * list[0] -> list -> 0
+     */
+
+  }, {
+    key: "evalListExpressionNode",
+    value: function evalListExpressionNode(name) {
+      var listName = name.replace(/[^a-z|A-Z]/ig, '');
+      var listIndex = parseInt(name.replace(/[^0-9]/ig, ''));
+      var list = this.env.get(listName);
+
+      if (typeof list == 'undefined') {
+        throw new SyntaxError("\u627E\u4E0D\u5230\u5217\u8868\uFF1A".concat(listName));
+      }
+
+      return list[1][listIndex];
     }
     /**
      * { condition: [{ name: 'a', operator: '>', name: '20' }], establish: [Array], contrary: [Array] }

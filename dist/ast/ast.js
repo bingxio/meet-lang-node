@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.WhileStatement = exports.IfStatement = exports.PlusStatement = exports.MinusStatement = exports.PrintLineStatement = exports.PrintStatement = exports.FuckStatement = exports.BinaryExpressionStatement = void 0;
+exports.ListStatement = exports.WhileStatement = exports.IfStatement = exports.PlusStatement = exports.MinusStatement = exports.ForEachStatement = exports.PrintLineStatement = exports.PrintStatement = exports.FuckStatement = exports.BinaryExpressionStatement = void 0;
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -102,6 +102,27 @@ function () {
 
 exports.PrintLineStatement = PrintLineStatement;
 
+var ForEachStatement =
+/*#__PURE__*/
+function () {
+  function ForEachStatement(name) {
+    _classCallCheck(this, ForEachStatement);
+
+    this.name = name;
+  }
+
+  _createClass(ForEachStatement, [{
+    key: "toString",
+    value: function toString() {
+      return "forEach -> ".concat(this.name);
+    }
+  }]);
+
+  return ForEachStatement;
+}();
+
+exports.ForEachStatement = ForEachStatement;
+
 var MinusStatement =
 /*#__PURE__*/
 function () {
@@ -192,3 +213,25 @@ function () {
 }();
 
 exports.WhileStatement = WhileStatement;
+
+var ListStatement =
+/*#__PURE__*/
+function () {
+  function ListStatement(type, value) {
+    _classCallCheck(this, ListStatement);
+
+    this.type = type;
+    this.value = value;
+  }
+
+  _createClass(ListStatement, [{
+    key: "toString",
+    value: function toString() {
+      return "".concat(this.type, " list[").concat(this.value, "]");
+    }
+  }]);
+
+  return ListStatement;
+}();
+
+exports.ListStatement = ListStatement;

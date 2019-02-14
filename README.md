@@ -90,6 +90,30 @@ Output:
 Hello World
 ```
 
+### List
+
+lists must be of the same type, it can now be integers and strings.  
+use `forEach` identifier to print all element.
+
+```
+fuck name -> ['meet' 'programming' 'language' '!'];
+
+fuck list -> [2 4 6 8 10];
+fuck listPlus -> (list[3] + list[4]);
+
+forEach -> list;    # meet programming language ! #
+forEach -> name;    # 2 4 6 8 10 #
+
+printLine -> list[4];   # 10 #
+printLine -> listPlus;  # 18 #
+
+Output:
+2 4 6 8 10 
+meet programming language ! 
+10
+18
+```
+
 ### Conditional statement
 
 ```
@@ -156,6 +180,7 @@ Output:
 
 ```
 fuck a -> 0;
+fuck b -> [1 2 3 4 5];
 
 minus -> a;
 minus -> a;
@@ -168,10 +193,13 @@ plus -> a;
 plus -> a;
 
 printLine -> a;
+
+forEach -> b;
 
 Output:
 -2
 2
+1 2 3 4 5
 ```
 
 Just For Fun !

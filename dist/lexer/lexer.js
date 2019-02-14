@@ -68,6 +68,10 @@ function () {
           while (char != '\'') {
             value += char;
             char = this.code[++this.current];
+
+            if (this.current == this.code.length) {
+              throw new SyntaxError('字符串必须一一对应');
+            }
           }
 
           this.newToken('string', value);
@@ -108,7 +112,7 @@ function () {
         } /////////////////////////////////////////////
 
 
-        if (char == '+' || char == '-' || char == '*' || char == '/' || char == ';' || char == ',' || char == '>' || char == '<' || char == '{' || char == '}' || char == '=' || char == '%') {
+        if (char == '+' || char == '-' || char == '*' || char == '/' || char == ';' || char == ',' || char == '>' || char == '<' || char == '{' || char == '}' || char == '=' || char == '%' || char == '[' || char == ']') {
           this.newToken('operator', char);
           this.current++;
           continue;
@@ -137,6 +141,26 @@ function () {
           while (LETTERS.test(char) && typeof char != 'undefined') {
             _value2 += char;
             char = this.code[++this.current];
+          }
+
+          if (this.code[this.current] == '[') {
+            var listValue = '';
+
+            while (this.code[this.current] != ']') {
+              listValue += char;
+              char = this.code[++this.current];
+
+              if (this.current == this.code.length) {
+                throw new SyntaxError('列表括号必须一一对应');
+              }
+            }
+
+            listValue += ']';
+            _value2 += listValue;
+            this.current++; // skip ']';
+
+            this.newToken('list', _value2);
+            continue;
           }
 
           this.newToken('name', _value2);

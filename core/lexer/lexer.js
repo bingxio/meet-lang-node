@@ -55,6 +55,10 @@ export class Lexer {
                 while (char != '\'') {
                     value += char;
                     char = this.code[++ this.current];
+
+                    if (this.current == this.code.length) {
+                        throw new SyntaxError('字符串必须一一对应');
+                    }
                 }
     
                 this.newToken('string', value);
@@ -107,7 +111,8 @@ export class Lexer {
     
             if (char == '+' || char == '-' || char == '*' || char == '/' ||
                 char == ';' || char == ',' || char == '>' || char == '<' ||
-                char == '{' || char == '}' || char == '=' || char == '%') {
+                char == '{' || char == '}' || char == '=' || char == '%' ||
+                char == '[' || char == ']') {
                 this.newToken('operator', char);
     
                 this.current ++;
@@ -138,6 +143,27 @@ export class Lexer {
                 while (LETTERS.test(char) && typeof(char) != 'undefined') {
                     value += char;
                     char = this.code[++ this.current];
+                }
+
+                if (this.code[this.current] == '[') {
+                    let listValue = '';
+
+                    while (this.code[this.current] != ']') {
+                        listValue += char;
+                        char = this.code[++ this.current];
+
+                        if (this.current == this.code.length) {
+                            throw new SyntaxError('列表括号必须一一对应');
+                        }
+                    }
+
+                    listValue += ']';
+                    value += listValue;
+
+                    this.current ++; // skip ']';
+                    this.newToken('list', value);
+
+                    continue;
                 }
     
                 this.newToken('name', value);

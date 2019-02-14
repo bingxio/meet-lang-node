@@ -50,6 +50,17 @@ export class PrintLineStatement {
     }
 }
 
+export class ForEachStatement {
+
+    constructor(name) {
+        this.name = name;
+    }
+
+    toString() {
+        return `forEach -> ${this.name}`;
+    }
+}
+
 export class MinusStatement {
 
     constructor(name) {
@@ -107,5 +118,17 @@ export class WhileStatement {
         return `while ${this.condition} {
             ${this.establish}
         }`;
+    }
+}
+
+export class ListStatement {
+
+    constructor(type, value) {
+        this.type = type;
+        this.value = value;
+    }
+
+    toString() {
+        return `${this.type} list[${this.value}]`;
     }
 }

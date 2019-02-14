@@ -1,5 +1,6 @@
 
-import { FuckStatement, PrintStatement, PrintLineStatement, IfStatement, WhileStatement, MinusStatement, PlusStatement, BinaryExpressionStatement } from '../ast/ast';
+import { FuckStatement, PrintStatement, PrintLineStatement, IfStatement, 
+    WhileStatement, MinusStatement, PlusStatement, BinaryExpressionStatement, ListStatement, ForEachStatement } from '../ast/ast';
 
 let LETTER = /[a-z|A-Z]/;
 let NUMBER = /[0-9]/;
@@ -50,6 +51,8 @@ export class Parser {
             case 'while':
                 ast.push(this.parseWhileStatement());
                 break;
+            case 'forEach':
+                ast.push(this.parseForEachStatement());
             case '{':
                 break;
             case '}':
@@ -64,6 +67,7 @@ export class Parser {
     /**
      * fuck a -> 200;
      * fuck a -> (20 + 5);
+     * fuck a -> [2, 4, 6, 8, 10];
      */
     parseFuckStatement() {
         let nameToken = this.tokens[++ this.current];
@@ -74,7 +78,10 @@ export class Parser {
 
         let valueToken = this.tokens[++ this.current];
         let valueExp = [];
+        let valueListExp = [];
+
         let valueExpressionStmt = new BinaryExpressionStatement();
+        let valueListExpressionStmt = new ListStatement();
 
         if (valueToken.value == '(') {
             this.current ++;
@@ -92,12 +99,50 @@ export class Parser {
             valueExpressionStmt.left = valueExp[0];
             valueExpressionStmt.operator = valueExp[1];
             valueExpressionStmt.right = valueExp[2];
+        } else if(valueToken.value == '[') {
+            this.current ++;
+
+            while (! this.isToken(']')) {
+                valueExp.push(this.tokens[this.current ++]);
+            }
+
+            let tempCurrent = 0;
+            let listVariableType = valueExp[0].type;
+
+            while (tempCurrent < valueExp.length) {
+                let v = valueExp[tempCurrent];
+
+                if (listVariableType == v.type) {
+                    valueListExp.push(v.value);
+                } else if (v.type == 'operator' && v.value == ',') {
+                    tempCurrent ++;
+                    continue;
+                } else {
+                    throw new SyntaxError(`缺少逗号或空白字符进行分割：${valueExp}`);
+                }
+
+                tempCurrent ++;
+            }
+
+            valueListExpressionStmt.type = listVariableType;
+            valueListExpressionStmt.value = valueListExp;
         } else {
             this.parseVariableType(valueToken);
-        }        
+        }
 
         if (valueExpressionStmt.operator != undefined) {
             let fuckStmt = new FuckStatement(nameToken.value, valueExpressionStmt);
+
+            this.current ++;
+            this.parseSemicolon();
+            this.current ++;
+            this.line ++;
+
+            return fuckStmt;
+        }
+
+        if (valueListExpressionStmt.type != undefined) {
+            let fuckStmt = new FuckStatement(nameToken.value, valueListExpressionStmt);
 
             this.current ++;
             this.parseSemicolon();
@@ -152,6 +197,7 @@ export class Parser {
 
     /**
      * printLine -> a
+     * printLine -> list[0];
      */
     parsePrintLineStatement() {
         this.current ++;
@@ -235,6 +281,28 @@ export class Parser {
         this.line ++;
 
         return plusStmt;
+    }
+
+    /**
+     * forEach -> list;
+     */
+    parseForEachStatement() {
+        this.current ++;
+        this.isPointer();
+        this.current ++;
+
+        let valueToken = this.tokens[this.current];
+
+        this.isLetter();
+
+        let forEachStmt = new ForEachStatement(valueToken.value);
+
+        this.current ++;
+        this.parseSemicolon();
+        this.current ++;
+        this.line ++;
+
+        return forEachStmt;
     }
 
     /**
@@ -378,6 +446,13 @@ export class Parser {
         this.line ++;
 
         return whileStmt;
+    }
+
+    /**
+     * fuck a -> [2, 4, 6, 8, 10];
+     */
+    parseListStatement() {
+        
     }
 
     /**

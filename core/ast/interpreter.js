@@ -1,7 +1,10 @@
 
-import { FuckStatement, PrintStatement, PrintLineStatement, IfStatement, WhileStatement, MinusStatement, PlusStatement, BinaryExpressionStatement } from "./ast";
+import { FuckStatement, PrintStatement, PrintLineStatement, IfStatement, 
+    WhileStatement, MinusStatement, PlusStatement, BinaryExpressionStatement, ListStatement, ForEachStatement } from "./ast";
 
 let LETTERS = /[a-z|A-Z]/;
+let LIST_LPAREN = /[\[]/;
+let LIST_RPAREN = /[\]]/;
 
 export class Interpreter {
 
@@ -35,6 +38,8 @@ export class Interpreter {
             this.evalMinusStatementNode();
         } else if (node instanceof PlusStatement) {
             this.evalPlusStatementNode();
+        } else if (node instanceof ForEachStatement) {
+            this.evalForEachStatementNode();
         } else {
             throw new TypeError(`解释失败，未知的类型：${node.toString()}`);
         }
@@ -49,6 +54,16 @@ export class Interpreter {
 
         if (value instanceof BinaryExpressionStatement) {
             value = this.evalBinaryExpressionNode([ value.left, value.operator, value.right ]);
+        }
+
+        if (value instanceof ListStatement) {
+            this.env.set(name, [
+                value.type,
+                value.value
+            ]);
+
+            this.current ++;
+            return;
         }
 
         this.env.set(name, value);
@@ -66,6 +81,15 @@ export class Interpreter {
         }
 
         let name = this.node.name;
+
+        if (LIST_LPAREN.test(name) && LIST_RPAREN.test(name)) {
+            let v = this.evalListExpressionNode(name);
+
+            this.logWithOutLine(v);
+
+            this.current ++;
+            return;
+        }
 
         if (this.isVariableType(name)) {
             let value = this.env.get(name);
@@ -98,6 +122,14 @@ export class Interpreter {
             this.logWithLine('');
             this.current ++;
 
+            return;
+        }
+
+        if (LIST_LPAREN.test(name) && LIST_RPAREN.test(name)) {
+            let v = this.evalListExpressionNode(name);
+
+            this.logWithLine(v);
+            this.current ++;
             return;
         }
 
@@ -161,6 +193,34 @@ export class Interpreter {
     }
 
     /**
+     * { name: 'list' }
+     */
+    evalForEachStatementNode() {
+        let name = this.node.name;
+
+        if (! this.isVariableType(name)) {
+            throw new TypeError(`未知的列表名：${name}`);
+        }
+
+        let list = this.env.get(name);
+        let outPut = '';
+
+        if (typeof(list) == 'undefined') {
+            throw new SyntaxError(`找不到列表：${name}`);
+        }
+
+        list[1].forEach(v => {
+            if (v != ',')
+                outPut += v;
+            outPut += ' ';
+        });
+
+        this.logWithLine(outPut);
+
+        this.current ++;
+    }
+
+    /**
      * 解析表达式、返回布尔值或表达式值
      */
     evalBinaryExpressionNode(ast) {
@@ -176,6 +236,14 @@ export class Interpreter {
             evalLeft = ast[0].value;
             evalOperator = ast[1].value;
             evalRight = this.evalBinaryExpressionNode([ evalRight.left, evalRight.operator, evalRight.right ]);
+        } else if (evalLeft.type == 'list') {
+            evalLeft = this.evalListExpressionNode(evalLeft.value);
+
+            if (evalRight.type == 'list') {
+                evalRight = this.evalListExpressionNode(evalRight.value);
+            }
+
+            evalOperator = ast[1].value;
         } else {
             evalLeft = ast[0].value;
             evalOperator = ast[1].value;
@@ -230,6 +298,23 @@ export class Interpreter {
             default:
                 throw new TypeError(`未知的操作数：${evalOperator}`);
         }
+    }
+
+    /**
+     * 根据列表名，返回列表值
+     * 
+     * list[0] -> list -> 0
+     */
+    evalListExpressionNode(name) {
+        let listName = name.replace(/[^a-z|A-Z]/ig, '');
+        let listIndex = parseInt(name.replace(/[^0-9]/ig, ''));
+        let list = this.env.get(listName);
+
+        if (typeof(list) == 'undefined') {
+            throw new SyntaxError(`找不到列表：${listName}`);
+        }
+
+        return list[1][listIndex];
     }
 
     /**

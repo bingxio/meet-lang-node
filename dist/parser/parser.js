@@ -75,6 +75,9 @@ function () {
           ast.push(this.parseWhileStatement());
           break;
 
+        case 'forEach':
+          ast.push(this.parseForEachStatement());
+
         case '{':
           break;
 
@@ -91,6 +94,7 @@ function () {
     /**
      * fuck a -> 200;
      * fuck a -> (20 + 5);
+     * fuck a -> [2, 4, 6, 8, 10];
      */
 
   }, {
@@ -102,7 +106,9 @@ function () {
       this.isPointer();
       var valueToken = this.tokens[++this.current];
       var valueExp = [];
+      var valueListExp = [];
       var valueExpressionStmt = new _ast.BinaryExpressionStatement();
+      var valueListExpressionStmt = new _ast.ListStatement();
 
       if (valueToken.value == '(') {
         this.current++;
@@ -120,6 +126,33 @@ function () {
         valueExpressionStmt.left = valueExp[0];
         valueExpressionStmt.operator = valueExp[1];
         valueExpressionStmt.right = valueExp[2];
+      } else if (valueToken.value == '[') {
+        this.current++;
+
+        while (!this.isToken(']')) {
+          valueExp.push(this.tokens[this.current++]);
+        }
+
+        var tempCurrent = 0;
+        var listVariableType = valueExp[0].type;
+
+        while (tempCurrent < valueExp.length) {
+          var v = valueExp[tempCurrent];
+
+          if (listVariableType == v.type) {
+            valueListExp.push(v.value);
+          } else if (v.type == 'operator' && v.value == ',') {
+            tempCurrent++;
+            continue;
+          } else {
+            throw new SyntaxError("\u7F3A\u5C11\u9017\u53F7\u6216\u7A7A\u767D\u5B57\u7B26\u8FDB\u884C\u5206\u5272\uFF1A".concat(valueExp));
+          }
+
+          tempCurrent++;
+        }
+
+        valueListExpressionStmt.type = listVariableType;
+        valueListExpressionStmt.value = valueListExp;
       } else {
         this.parseVariableType(valueToken);
       }
@@ -132,6 +165,16 @@ function () {
         this.current++;
         this.line++;
         return _fuckStmt;
+      }
+
+      if (valueListExpressionStmt.type != undefined) {
+        var _fuckStmt2 = new _ast.FuckStatement(nameToken.value, valueListExpressionStmt);
+
+        this.current++;
+        this.parseSemicolon();
+        this.current++;
+        this.line++;
+        return _fuckStmt2;
       }
 
       var fuckStmt = new _ast.FuckStatement(nameToken.value, valueToken.value);
@@ -172,6 +215,7 @@ function () {
     }
     /**
      * printLine -> a
+     * printLine -> list[0];
      */
 
   }, {
@@ -244,6 +288,25 @@ function () {
       this.current++;
       this.line++;
       return plusStmt;
+    }
+    /**
+     * forEach -> list;
+     */
+
+  }, {
+    key: "parseForEachStatement",
+    value: function parseForEachStatement() {
+      this.current++;
+      this.isPointer();
+      this.current++;
+      var valueToken = this.tokens[this.current];
+      this.isLetter();
+      var forEachStmt = new _ast.ForEachStatement(valueToken.value);
+      this.current++;
+      this.parseSemicolon();
+      this.current++;
+      this.line++;
+      return forEachStmt;
     }
     /**
      * if a > 20 {
@@ -380,6 +443,13 @@ function () {
       this.line++;
       return whileStmt;
     }
+    /**
+     * fuck a -> [2, 4, 6, 8, 10];
+     */
+
+  }, {
+    key: "parseListStatement",
+    value: function parseListStatement() {}
     /**
      * 是否匹配变量的值规则
      */
