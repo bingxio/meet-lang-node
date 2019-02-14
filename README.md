@@ -92,8 +92,7 @@ Hello World
 
 ### List
 
-lists must be of the same type, it can now be integers and strings.  
-use `forEach` identifier to print all element.
+lists must be of the same type, it can now be integers and strings, use `forEach` identifier to print all element.
 
 ```
 fuck name -> ['meet' 'programming' 'language' '!'];
