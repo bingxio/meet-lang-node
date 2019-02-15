@@ -181,3 +181,16 @@ export class CallFunStatement {
         return `fun -> ${this.name}`;
     }
 }
+
+export class SetStatement {
+
+    constructor(type, name, value) {
+        this.type = type;
+        this.name = name;
+        this.value = value;
+    }
+
+    toString() {
+        return `set ${this.name} -> ${this.value}`;
+    }
+}

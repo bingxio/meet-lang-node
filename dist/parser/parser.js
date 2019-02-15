@@ -91,6 +91,10 @@ function () {
           ast.push(this.parseFunStatement());
           break;
 
+        case 'set':
+          ast.push(this.parseSetStatement());
+          break;
+
         case '{':
           break;
 
@@ -107,7 +111,8 @@ function () {
     /**
      * fuck a -> 200;
      * fuck a -> (20 + 5);
-     * fuck a -> [2, 4, 6, 8, 10];
+     * fuck a -> [2 4 6 8 10];
+     * fuck a -> (list[a] + list[b])
      */
 
   }, {
@@ -146,26 +151,31 @@ function () {
           valueExp.push(this.tokens[this.current++]);
         }
 
-        var tempCurrent = 0;
-        var listVariableType = valueExp[0].type;
+        if (valueExp.length == 0) {
+          valueListExpressionStmt.type = 'empty';
+          valueListExpressionStmt.value = [];
+        } else {
+          var tempCurrent = 0;
+          var listVariableType = valueExp[0].type;
 
-        while (tempCurrent < valueExp.length) {
-          var v = valueExp[tempCurrent];
+          while (tempCurrent < valueExp.length) {
+            var v = valueExp[tempCurrent];
 
-          if (listVariableType == v.type) {
-            valueListExp.push(v.value);
-          } else if (v.type == 'operator' && v.value == ',') {
+            if (listVariableType == v.type) {
+              valueListExp.push(v.value);
+            } else if (v.type == 'operator' && v.value == ',') {
+              tempCurrent++;
+              continue;
+            } else {
+              throw new SyntaxError("\u7F3A\u5C11\u9017\u53F7\u6216\u7A7A\u767D\u5B57\u7B26\u8FDB\u884C\u5206\u5272\uFF1A".concat(valueExp));
+            }
+
             tempCurrent++;
-            continue;
-          } else {
-            throw new SyntaxError("\u7F3A\u5C11\u9017\u53F7\u6216\u7A7A\u767D\u5B57\u7B26\u8FDB\u884C\u5206\u5272\uFF1A".concat(valueExp));
           }
 
-          tempCurrent++;
+          valueListExpressionStmt.type = listVariableType;
+          valueListExpressionStmt.value = valueListExp;
         }
-
-        valueListExpressionStmt.type = listVariableType;
-        valueListExpressionStmt.value = valueListExp;
       } else {
         this.parseVariableType(valueToken);
       }
@@ -537,6 +547,54 @@ function () {
       var breakStmt = new _ast.BreakStatement();
       this.current++;
       return breakStmt;
+    }
+    /**
+     * set list[0] -> 6;
+     * set list[a] -> (list[a] + list[b]);
+     */
+
+  }, {
+    key: "parseSetStatement",
+    value: function parseSetStatement() {
+      this.current++;
+      var name = this.currentToken();
+      this.current++;
+      this.isPointer();
+      this.current++;
+      var value = this.currentToken();
+      var valueExpressionStmt = new _ast.BinaryExpressionStatement();
+      var valueExp = [];
+
+      if (value.value == '(') {
+        this.current++;
+
+        while (!this.isToken(')')) {
+          valueExp.push(this.tokens[this.current++]);
+        }
+
+        if (typeof valueExp != 'undefined') {
+          if (valueExp.length > 3 || valueExp.length < 3) {
+            throw new SyntaxError("\u64CD\u4F5C\u6570\u9519\u8BEF\uFF1A".concat(valueExp));
+          }
+        }
+
+        valueExpressionStmt.left = valueExp[0];
+        valueExpressionStmt.operator = valueExp[1];
+        valueExpressionStmt.right = valueExp[2];
+
+        var _setStmt = new _ast.SetStatement('exp', name.value, valueExpressionStmt);
+
+        this.current++;
+        this.parseSemicolon();
+        this.current++;
+        return _setStmt;
+      }
+
+      this.current++;
+      this.parseSemicolon();
+      this.current++;
+      var setStmt = new _ast.SetStatement('value', name.value, value.value);
+      return setStmt;
     }
     /**
      * fun a => {

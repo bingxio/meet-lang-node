@@ -7,6 +7,8 @@ exports.Interpreter = void 0;
 
 var _ast = require("./ast");
 
+var _token = require("../token/token");
+
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -16,6 +18,7 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 var LETTERS = /[a-z|A-Z]/;
+var NUMBERS = /[0-9]/;
 var LIST_LPAREN = /[\[]/;
 var LIST_RPAREN = /[\]]/;
 var breakForStatement = 1;
@@ -65,6 +68,8 @@ function () {
         this.evalDefineFunStatementNode();
       } else if (node instanceof _ast.CallFunStatement) {
         this.evalCallFunStatementNode();
+      } else if (node instanceof _ast.SetStatement) {
+        this.evalSetStatementNode();
       } else if (node instanceof _ast.BreakStatement) {
         breakForStatement = 0;
         this.current++;
@@ -136,6 +141,13 @@ function () {
 
       if (LIST_LPAREN.test(name) && LIST_RPAREN.test(name)) {
         var v = this.evalListExpressionNode(name);
+
+        if (typeof v == 'undefined') {
+          this.logWithOutLine('empty item');
+          this.current++;
+          return;
+        }
+
         this.logWithOutLine(v);
         this.current++;
         return;
@@ -202,6 +214,13 @@ function () {
 
       if (LIST_LPAREN.test(name) && LIST_RPAREN.test(name)) {
         var v = this.evalListExpressionNode(name);
+
+        if (typeof v == 'undefined') {
+          this.logWithLine('empty item');
+          this.current++;
+          return;
+        }
+
         this.logWithLine(v);
         this.current++;
         return;
@@ -291,11 +310,57 @@ function () {
         if (v != ',') outPut += v;
         outPut += ' ';
       });
-      this.logWithLine(outPut);
+
+      if (outPut.length == 0) {
+        this.logWithLine('empty list');
+      } else {
+        this.logWithLine(outPut);
+      }
+
       this.current++;
     }
     /**
-     * 解析表达式、返回布尔值或表达式值
+     * { name: 'list[0]', value: 6 }
+     */
+
+  }, {
+    key: "evalSetStatementNode",
+    value: function evalSetStatementNode() {
+      var type = this.node.type;
+      var name = this.node.name;
+      var value = this.node.value;
+
+      if (type == 'value' && LIST_LPAREN.test(name) && LIST_RPAREN.test(name)) {
+        var v = this.evalListExpressionSetValue(name, value);
+
+        if (!v) {
+          throw new Error("\u8BBE\u7F6E\u65B0\u503C\u5931\u8D25\uFF1Alist_name -> ".concat(name, " new_value -> ").concat(value));
+        }
+
+        this.current++;
+        return;
+      }
+
+      if (type == 'exp' && value instanceof _ast.BinaryExpressionStatement) {
+        var valueExpList = [];
+        valueExpList.push(value.left);
+        valueExpList.push(value.operator);
+        valueExpList.push(value.right);
+
+        var _v = this.evalListExpressionSetValue(name, this.evalBinaryExpressionNode(valueExpList));
+
+        if (!_v) {
+          throw new Error("\u8BBE\u7F6E\u65B0\u503C\u5931\u8D25\uFF1Alist_name -> ".concat(name, " new_value -> ").concat(value));
+        }
+
+        this.current++;
+        return;
+      }
+
+      throw new Error("\u8BBE\u7F6E\u65B0\u503C\u5931\u8D25\uFF1Alist_name -> ".concat(name, " new_value -> ").concat(value));
+    }
+    /**
+     * 传列表、解析表达式、返回布尔值或表达式值
      */
 
   }, {
@@ -325,6 +390,12 @@ function () {
         evalLeft = ast[0].value;
         evalOperator = ast[1].value;
         evalRight = ast[2].value;
+      }
+
+      if (evalLeft instanceof _token.Token && evalLeft.type == 'number') {
+        evalLeft = parseInt(evalLeft.value);
+      } else if (evalRight instanceof _token.Token && evalRight.type == 'number') {
+        evalRight = parseInt(evalRight.value);
       }
 
       if (this.isVariableType(evalLeft)) evalLeft = this.env.get(evalLeft);
@@ -432,6 +503,54 @@ function () {
 
       listIndexName = parseInt(listIndexName);
       return list[1][listIndexName];
+    }
+    /**
+     * 根据列表名和新值，设置新值
+     */
+
+  }, {
+    key: "evalListExpressionSetValue",
+    value: function evalListExpressionSetValue(name, value) {
+      var listName = '';
+      var listIndexName = '';
+      var current = 0;
+
+      while (current < name.length && name[current] != '[') {
+        listName += name[current++];
+      }
+
+      current++;
+
+      while (current < name.length && name[current] != ']') {
+        listIndexName += name[current++];
+      }
+
+      var list = this.env.get(listName);
+
+      if (typeof list == 'undefined') {
+        throw new SyntaxError("\u627E\u4E0D\u5230\u5217\u8868\uFF1A".concat(listName));
+      }
+
+      if (LETTERS.test(listIndexName)) {
+        listIndexName = this.env.get(listIndexName);
+      }
+
+      if (typeof listIndexName == 'undefined') {
+        throw new SyntaxError("\u627E\u4E0D\u5230\u53D8\u91CF\uFF1A".concat(listIndexName));
+      }
+
+      listIndexName = parseInt(listIndexName);
+
+      if (this.isVariableType(value)) {
+        value = this.env.get(value);
+
+        if (typeof value == 'undefined') {
+          throw new SyntaxError("\u627E\u4E0D\u5230\u53D8\u91CF\uFF1A".concat(value));
+        }
+      }
+
+      list[1][listIndexName] = value;
+      return true;
     }
     /**
      * { condition: [{ name: 'a', operator: '>', name: '20' }], establish: [Array], contrary: [Array] }
@@ -595,7 +714,7 @@ function () {
   }, {
     key: "logWithOutLine",
     value: function logWithOutLine(v) {
-      process.stdout.write(v);
+      process.stdout.write(v + '');
     }
   }]);
 

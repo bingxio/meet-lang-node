@@ -1,8 +1,10 @@
 
 import { FuckStatement, PrintStatement, PrintLineStatement, IfStatement, WhileStatement, MinusStatement, PlusStatement, BinaryExpressionStatement, 
-    ListStatement, ForEachStatement, ForStatement, BreakStatement, DefineFunStatement, CallFunStatement } from "./ast";
+    ListStatement, ForEachStatement, ForStatement, BreakStatement, DefineFunStatement, CallFunStatement, SetStatement } from "./ast";
+import { Token } from "../token/token";
 
 let LETTERS = /[a-z|A-Z]/;
+let NUMBERS = /[0-9]/;
 let LIST_LPAREN = /[\[]/;
 let LIST_RPAREN = /[\]]/;
 
@@ -48,6 +50,8 @@ export class Interpreter {
             this.evalDefineFunStatementNode();
         } else if (node instanceof CallFunStatement) {
             this.evalCallFunStatementNode();
+        } else if (node instanceof SetStatement) {
+            this.evalSetStatementNode();
         } else if (node instanceof BreakStatement) {
             breakForStatement = 0;
             this.current ++;
@@ -120,8 +124,13 @@ export class Interpreter {
         if (LIST_LPAREN.test(name) && LIST_RPAREN.test(name)) {
             let v = this.evalListExpressionNode(name);
 
-            this.logWithOutLine(v);
+            if (typeof(v) == 'undefined') {
+                this.logWithOutLine('empty item');
+                this.current ++;
+                return;
+            }
 
+            this.logWithOutLine(v);
             this.current ++;
             return;
         }
@@ -186,6 +195,12 @@ export class Interpreter {
 
         if (LIST_LPAREN.test(name) && LIST_RPAREN.test(name)) {
             let v = this.evalListExpressionNode(name);
+
+            if (typeof(v) == 'undefined') {
+                this.logWithLine('empty item');
+                this.current ++;
+                return;
+            }
 
             this.logWithLine(v);
             this.current ++;
@@ -274,13 +289,56 @@ export class Interpreter {
             outPut += ' ';
         });
 
-        this.logWithLine(outPut);
+        if (outPut.length == 0) {
+            this.logWithLine('empty list');
+        } else {
+            this.logWithLine(outPut);
+        }
 
         this.current ++;
     }
 
     /**
-     * 解析表达式、返回布尔值或表达式值
+     * { name: 'list[0]', value: 6 }
+     */
+    evalSetStatementNode() {
+        let type = this.node.type;
+        let name = this.node.name;
+        let value = this.node.value;
+
+        if (type == 'value' && LIST_LPAREN.test(name) && LIST_RPAREN.test(name)) {
+            let v = this.evalListExpressionSetValue(name, value);
+
+            if (! v) {
+                throw new Error(`设置新值失败：list_name -> ${name} new_value -> ${value}`);
+            }
+
+            this.current ++;
+            return;
+        }
+
+        if (type == 'exp' && value instanceof BinaryExpressionStatement) {
+            let valueExpList = [];
+
+            valueExpList.push(value.left);
+            valueExpList.push(value.operator);
+            valueExpList.push(value.right);
+
+            let v = this.evalListExpressionSetValue(name, this.evalBinaryExpressionNode(valueExpList));
+
+            if (! v) {
+                throw new Error(`设置新值失败：list_name -> ${name} new_value -> ${value}`);
+            }
+
+            this.current ++;
+            return;
+        }
+
+        throw new Error(`设置新值失败：list_name -> ${name} new_value -> ${value}`);
+    }
+
+    /**
+     * 传列表、解析表达式、返回布尔值或表达式值
      */
     evalBinaryExpressionNode(ast) {
         let evalLeft = ast[0];
@@ -302,11 +360,17 @@ export class Interpreter {
                 evalRight = this.evalListExpressionNode(evalRight.value);
             }
 
-            evalOperator = ast[1].value;
+            evalOperator = ast[1].value; 
         } else {
             evalLeft = ast[0].value;
             evalOperator = ast[1].value;
             evalRight = ast[2].value;
+        }
+
+        if (evalLeft instanceof Token && evalLeft.type == 'number') {
+            evalLeft = parseInt(evalLeft.value);
+        } else if (evalRight instanceof Token && evalRight.type == 'number') {
+            evalRight = parseInt(evalRight.value);
         }
 
         if (this.isVariableType(evalLeft)) evalLeft = this.env.get(evalLeft);
@@ -399,6 +463,53 @@ export class Interpreter {
         listIndexName = parseInt(listIndexName);
 
         return list[1][listIndexName];
+    }
+
+    /**
+     * 根据列表名和新值，设置新值
+     */
+    evalListExpressionSetValue(name, value) {
+        let listName = '';
+        let listIndexName = '';
+        let current = 0;
+
+        while (current < name.length && name[current] != '[') {
+            listName += name[current ++];
+        }
+
+        current ++;
+
+        while (current < name.length && name[current] != ']') {
+            listIndexName += name[current ++];
+        }
+
+        let list = this.env.get(listName);
+
+        if (typeof(list) == 'undefined') {
+            throw new SyntaxError(`找不到列表：${listName}`);
+        }
+
+        if (LETTERS.test(listIndexName)) {
+            listIndexName = this.env.get(listIndexName);
+        }
+
+        if (typeof(listIndexName) == 'undefined') {
+            throw new SyntaxError(`找不到变量：${listIndexName}`);
+        }
+
+        listIndexName = parseInt(listIndexName);
+
+        if (this.isVariableType(value)) {
+            value = this.env.get(value);
+
+            if (typeof(value) == 'undefined') {
+                throw new SyntaxError(`找不到变量：${value}`);
+            }
+        }
+
+        list[1][listIndexName] = value;
+
+        return true;
     }
 
     /**
@@ -542,6 +653,6 @@ export class Interpreter {
      * 打印但是不换行
      */
     logWithOutLine(v) {
-        process.stdout.write(v);
+        process.stdout.write(v + '');
     }
 }

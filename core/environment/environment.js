@@ -1,21 +1,21 @@
 
-let variableMap = {};
+export let envMap = {};
 
 export class Environment {
 
     get(k) {
-        if (variableMap.hasOwnProperty(k)) {
-            return variableMap[k];
+        if (envMap.hasOwnProperty(k)) {
+            return envMap[k];
         } else {
             return undefined;
         }
     }
 
     set(k, v) {
-        variableMap[k] = v;
+        envMap[k] = v;
     }
 
     has(k) {
-        return variableMap.hasOwnProperty(k);
+        return envMap.hasOwnProperty(k);
     }
 }

@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 "use strict";
 
 var _lexer = require("./lexer/lexer");
@@ -21,6 +23,7 @@ var shellWithToken = false;
 var shellWithShowAll = false;
 var shellWithAst = false;
 var shellWithSource = false;
+var shellWithEnv = false;
 
 var r1 = _readline.default.createInterface({
   input: process.stdin,
@@ -56,11 +59,13 @@ if (process.argv.length == 2) {
     shellWithShowAll = true;
   } else if (process.argv[2] == '-source') {
     shellWithSource = true;
+  } else if (process.argv[2] == '-env') {
+    shellWithEnv = true;
   } else {
     shellWithFile = process.argv[2];
   }
 
-  if (shellWithToken || shellWithAst || shellWithShowAll || shellWithSource) {
+  if (shellWithToken || shellWithAst || shellWithShowAll || shellWithSource || shellWithEnv) {
     shellWithFile = process.argv[3];
   }
 
@@ -109,6 +114,15 @@ if (process.argv.length == 2) {
 
   var interpreter = new _interpreter.Interpreter(ast, environment);
   interpreter.eval();
+
+  if (shellWithEnv || shellWithShowAll) {
+    console.log('----------------------------------------------');
+    process.stdout.write('keys: ');
+    console.log(Object.keys(_environment.envMap));
+    process.stdout.write('values: ');
+    console.log(Object.values(_environment.envMap));
+  }
+
   process.exit();
 }
 

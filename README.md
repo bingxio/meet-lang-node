@@ -26,6 +26,7 @@ npm i -g meet-lang
 > meet -token sample.meet   # run and show code tokens.
 > meet -ast sample.meet     # run and show code ast tree.
 > meet -all sample.meet     # run and show tokens and ast tree.
+> meet -env sample.meet     # run and show variable map enviroment #
 ```
 
 The second way, it will show the REPL interface.
@@ -51,10 +52,10 @@ Hello World
 ```
 
 The third way, you can run the specified file.  
-Of course, you can also add parameters like `-token` or `-ast` or `-all` to show token or ast syntax trees.
+Of course, you can also add parameters like `-token` or `-ast` or `-all` or `-env` to show token or ast syntax trees or variable map enviroment.
 
 ```
-node dist/meet.js [-token / -ast / -all] sample.meet
+node dist/meet.js [-token / -ast / -env / -all] sample.meet
 ```
 
 ### Comment
@@ -259,10 +260,15 @@ printLine -> a;
 
 forEach -> b;
 
+set b[0] -> 5;
+
+forEach -> b;
+
 Output:
 -2
 2
 1 2 3 4 5
+5 2 3 4 5
 ```
 
 Just For Fun !

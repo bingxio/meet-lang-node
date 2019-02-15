@@ -1,6 +1,6 @@
 
 import { FuckStatement, PrintStatement, PrintLineStatement, IfStatement, WhileStatement, MinusStatement, PlusStatement, BinaryExpressionStatement, 
-    ListStatement, ForEachStatement, BreakStatement, ForStatement, DefineFunStatement, CallFunStatement } from '../ast/ast';
+    ListStatement, ForEachStatement, BreakStatement, ForStatement, DefineFunStatement, CallFunStatement, SetStatement } from '../ast/ast';
 
 let LETTER = /[a-z|A-Z]/;
 let NUMBER = /[0-9]/;
@@ -63,6 +63,9 @@ export class Parser {
             case 'fun':
                 ast.push(this.parseFunStatement());
                 break;
+            case 'set':
+                ast.push(this.parseSetStatement());
+                break;
             case '{':
                 break;
             case '}':
@@ -77,7 +80,8 @@ export class Parser {
     /**
      * fuck a -> 200;
      * fuck a -> (20 + 5);
-     * fuck a -> [2, 4, 6, 8, 10];
+     * fuck a -> [2 4 6 8 10];
+     * fuck a -> (list[a] + list[b])
      */
     parseFuckStatement() {
         let nameToken = this.tokens[++ this.current];
@@ -116,26 +120,31 @@ export class Parser {
                 valueExp.push(this.tokens[this.current ++]);
             }
 
-            let tempCurrent = 0;
-            let listVariableType = valueExp[0].type;
+            if (valueExp.length == 0) {
+                valueListExpressionStmt.type = 'empty';
+                valueListExpressionStmt.value = [];
+            } else {
+                let tempCurrent = 0;
+                let listVariableType = valueExp[0].type;
 
-            while (tempCurrent < valueExp.length) {
-                let v = valueExp[tempCurrent];
+                while (tempCurrent < valueExp.length) {
+                    let v = valueExp[tempCurrent];
 
-                if (listVariableType == v.type) {
-                    valueListExp.push(v.value);
-                } else if (v.type == 'operator' && v.value == ',') {
+                    if (listVariableType == v.type) {
+                        valueListExp.push(v.value);
+                    } else if (v.type == 'operator' && v.value == ',') {
+                        tempCurrent ++;
+                        continue;
+                    } else {
+                        throw new SyntaxError(`缺少逗号或空白字符进行分割：${valueExp}`);
+                    }
+
                     tempCurrent ++;
-                    continue;
-                } else {
-                    throw new SyntaxError(`缺少逗号或空白字符进行分割：${valueExp}`);
                 }
 
-                tempCurrent ++;
+                valueListExpressionStmt.type = listVariableType;
+                valueListExpressionStmt.value = valueListExp;
             }
-
-            valueListExpressionStmt.type = listVariableType;
-            valueListExpressionStmt.value = valueListExp;
         } else {
             this.parseVariableType(valueToken);
         }
@@ -551,6 +560,58 @@ export class Parser {
         this.current ++;
 
         return breakStmt;
+    }
+
+    /**
+     * set list[0] -> 6;
+     * set list[a] -> (list[a] + list[b]);
+     */
+    parseSetStatement() {
+        this.current ++;
+
+        let name = this.currentToken();
+
+        this.current ++;
+        this.isPointer();
+        this.current ++;
+
+        let value = this.currentToken();
+        let valueExpressionStmt = new BinaryExpressionStatement();
+        let valueExp = [];
+
+        if (value.value == '(') {
+            this.current ++;
+
+            while (! this.isToken(')')) {
+                valueExp.push(this.tokens[this.current ++]);
+            }
+
+            if (typeof(valueExp) != 'undefined') {
+                if (valueExp.length > 3 || valueExp.length < 3) {
+                    throw new SyntaxError(`操作数错误：${valueExp}`);
+                }
+            }
+
+            valueExpressionStmt.left = valueExp[0];
+            valueExpressionStmt.operator = valueExp[1];
+            valueExpressionStmt.right = valueExp[2];
+
+            let setStmt = new SetStatement('exp', name.value, valueExpressionStmt);
+
+            this.current ++;
+            this.parseSemicolon();
+            this.current ++;
+
+            return setStmt;
+        }
+
+        this.current ++;
+        this.parseSemicolon();
+        this.current ++;
+
+        let setStmt = new SetStatement('value', name.value, value.value);
+
+        return setStmt;
     }
 
     /**

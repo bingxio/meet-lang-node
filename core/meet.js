@@ -2,7 +2,7 @@
 import { Lexer } from './lexer/lexer';
 import { Parser } from './parser/parser';
 import { Interpreter } from './ast/interpreter';
-import { Environment } from './environment/environment';
+import { Environment, envMap } from './environment/environment';
 
 import fs from 'fs';
 import path from 'path';
@@ -13,6 +13,7 @@ let shellWithToken = false;
 let shellWithShowAll = false;
 let shellWithAst = false;
 let shellWithSource = false;
+let shellWithEnv = false;
 
 let r1 = readline.createInterface({
     input: process.stdin,
@@ -48,11 +49,13 @@ if (process.argv.length == 2) {
         shellWithShowAll = true;
     } else if (process.argv[2] == '-source') {
         shellWithSource = true;
+    } else if (process.argv[2] == '-env') {
+        shellWithEnv = true;
     } else {
         shellWithFile = process.argv[2];
     }
     
-    if (shellWithToken || shellWithAst || shellWithShowAll || shellWithSource) {
+    if (shellWithToken || shellWithAst || shellWithShowAll || shellWithSource || shellWithEnv) {
         shellWithFile = process.argv[3];
     }
     
@@ -94,6 +97,14 @@ if (process.argv.length == 2) {
     let interpreter = new Interpreter(ast, environment);
     
     interpreter.eval();
+
+    if (shellWithEnv || shellWithShowAll) {
+        console.log('----------------------------------------------');
+        process.stdout.write('keys: ');
+        console.log(Object.keys(envMap));
+        process.stdout.write('values: ');
+        console.log(Object.values(envMap))
+    }
 
     process.exit();
 }

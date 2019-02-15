@@ -68,16 +68,30 @@ export class Lexer {
             }
     
             /////////////////////////////////////////////
-    
-            if (char == '=' && this.code[++ this.current] == '>') {
-                this.newToken('operator', '=>');
-                
+
+            if (char == '=') {
                 this.current ++;
+
+                if (this.code[this.current] == '>') {
+                    this.newToken('operator', '=>');
+                    this.current ++;
+                    continue;
+                }
+
+                if (this.code[this.current] == '=') {
+                    this.newToken('operator', '==');
+                    this.current ++;
+                    continue;
+                }
+
+                this.newToken('operator', '-');
+                this.current ++;
+
                 continue;
             }
 
             if ((char == '+' || char == '*' || char == '/' || char == '>' || 
-                 char == '<' || char == '!' || char == '=') && this.code[++ this.current] == '=') {
+                 char == '<' || char == '!') && this.code[++ this.current] == '=') {
                 this.newToken('operator', char += '=');
 
                 this.current ++;
@@ -111,8 +125,7 @@ export class Lexer {
     
             if (char == '+' || char == '-' || char == '*' || char == '/' ||
                 char == ';' || char == ',' || char == '>' || char == '<' ||
-                char == '{' || char == '}' || char == '=' || char == '%' ||
-                char == '[' || char == ']') {
+                char == '{' || char == '}' || char == '%' || char == '[' || char == ']') {
                 this.newToken('operator', char);
     
                 this.current ++;

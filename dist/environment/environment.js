@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Environment = void 0;
+exports.Environment = exports.envMap = void 0;
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -11,7 +11,8 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var variableMap = {};
+var envMap = {};
+exports.envMap = envMap;
 
 var Environment =
 /*#__PURE__*/
@@ -23,8 +24,8 @@ function () {
   _createClass(Environment, [{
     key: "get",
     value: function get(k) {
-      if (variableMap.hasOwnProperty(k)) {
-        return variableMap[k];
+      if (envMap.hasOwnProperty(k)) {
+        return envMap[k];
       } else {
         return undefined;
       }
@@ -32,12 +33,12 @@ function () {
   }, {
     key: "set",
     value: function set(k, v) {
-      variableMap[k] = v;
+      envMap[k] = v;
     }
   }, {
     key: "has",
     value: function has(k) {
-      return variableMap.hasOwnProperty(k);
+      return envMap.hasOwnProperty(k);
     }
   }]);
 
