@@ -1,0 +1,37 @@
+
+fuck name -> ['meet' 'programming' 'language'];
+
+fuck list -> [2 4 6 8 10];
+fuck listPlus -> (list[3] + list[4]);
+
+forEach -> name;
+forEach -> list;
+
+printLine -> name[0];
+printLine -> list[4];
+printLine -> listPlus;
+
+printLine 1;
+
+fuck tom -> 0;
+fuck frank -> 10;
+
+while (tom += 1) < frank {
+    if (tom % 2) == 0 {
+        print -> 'tom = ';
+        printLine -> tom;
+    }
+}
+
+printLine 1;
+
+for {
+    print -> 'tom = ';
+    printLine -> tom;
+
+    if (tom -= 1) == 0 {
+        printLine -> 'run ok !';
+        
+        break;
+    }
+}

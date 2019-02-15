@@ -1,6 +1,6 @@
 {
     "name": "meet-lang",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Meet programming language",
     "main": "dist/meet.js",
     "bin": {

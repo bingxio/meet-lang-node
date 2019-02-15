@@ -26,3 +26,17 @@ printLine -> c;
 fuck c -> (2 / 10);
 print -> '2 / 10 = ';
 printLine -> c;
+
+########################
+
+printLine;      # print 1 '\n' #
+printLine 2;    # print 2 '\n' #
+printLine 3;    # print 3 '\n' #
+
+########################
+
+fuck d -> 2;
+
+print d;        # print 2 ' ' #
+print -> 'hello';
+printLine d;    # print 2 '\n' #

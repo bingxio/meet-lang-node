@@ -20,7 +20,7 @@ export class FuckStatement {
     }
 
     toString() {
-        return `fuck ${this.name} -> ${this.value}`;
+        return `fuck ${this.name} -> ${this.value};`;
     }
 }
 
@@ -33,7 +33,7 @@ export class PrintStatement {
     }
 
     toString() {
-        return `print -> ${this.name}`;
+        return `print -> ${this.name};`;
     }
 }
 
@@ -46,7 +46,7 @@ export class PrintLineStatement {
     }
 
     toString() {
-        return `printLine -> ${this.name}`;
+        return `printLine -> ${this.name};`;
     }
 }
 
@@ -57,7 +57,7 @@ export class ForEachStatement {
     }
 
     toString() {
-        return `forEach -> ${this.name}`;
+        return `forEach -> ${this.name};`;
     }
 }
 
@@ -68,7 +68,7 @@ export class MinusStatement {
     }
 
     toString() {
-        return `minus -> ${this.name}`;
+        return `minus -> ${this.name};`;
     }
 }
 
@@ -79,7 +79,7 @@ export class PlusStatement {
     }
 
     toString() {
-        return `plus -> ${this.name}`;
+        return `plus -> ${this.name};`;
     }
 }
 
@@ -117,7 +117,7 @@ export class WhileStatement {
     toString() {
         return `while ${this.condition} {
             ${this.establish}
-        }`;
+        }`;s
     }
 }
 
@@ -129,6 +129,30 @@ export class ListStatement {
     }
 
     toString() {
-        return `${this.type} list[${this.value}]`;
+        return `${this.type} list[${this.value}];`;
+    }
+}
+
+export class ForStatement {
+
+    constructor(establish) {
+        this.establish = establish;
+    }
+
+    toString() {
+        return `for {
+            ${this.establish}
+        }`;
+    }
+}
+
+export class BreakStatement {
+
+    constructor() {
+        this.name = 'break';
+    }
+
+    toString() {
+        return `${this.name};`;
     }
 }

@@ -75,8 +75,17 @@ function () {
           ast.push(this.parseWhileStatement());
           break;
 
+        case 'for':
+          ast.push(this.parseForStatement());
+          break;
+
+        case 'break':
+          ast.push(this.parseBreakStatement());
+          break;
+
         case 'forEach':
           ast.push(this.parseForEachStatement());
+          break;
 
         case '{':
           break;
@@ -192,8 +201,28 @@ function () {
     key: "parsePrintStatement",
     value: function parsePrintStatement() {
       this.current++;
+      var printStmt; // 按制定的数量输出换行
+
+      if (NUMBER.test(this.currentToken().value)) {
+        printStmt = new _ast.PrintStatement('line', undefined, this.currentToken().value);
+        this.current++;
+        this.parseSemicolon();
+        this.current++;
+        this.line++;
+        return printStmt;
+      } // 按变量输出指定个数的换行
+
+
+      if (LETTER.test(this.currentToken().value)) {
+        printStmt = new _ast.PrintStatement('line', this.currentToken().value, undefined);
+        this.current++;
+        this.parseSemicolon();
+        this.current++;
+        this.line++;
+        return printStmt;
+      }
+
       this.isPointer();
-      var printStmt;
       var valueToken = this.tokens[++this.current];
 
       if (valueToken.type == 'string') {
@@ -222,9 +251,28 @@ function () {
     key: "parsePrintLineStatement",
     value: function parsePrintLineStatement() {
       this.current++;
-      var printLineStmt;
+      var printLineStmt; // 按制定的数量输出换行
 
-      if (this.tokens[this.current].value != '->') {
+      if (NUMBER.test(this.currentToken().value)) {
+        printLineStmt = new _ast.PrintLineStatement('line', undefined, this.currentToken().value);
+        this.current++;
+        this.parseSemicolon();
+        this.current++;
+        this.line++;
+        return printLineStmt;
+      } // 按变量输出指定个数的换行
+
+
+      if (LETTER.test(this.currentToken().value)) {
+        printLineStmt = new _ast.PrintLineStatement('line', this.currentToken().value, undefined);
+        this.current++;
+        this.parseSemicolon();
+        this.current++;
+        this.line++;
+        return printLineStmt;
+      }
+
+      if (this.currentToken().value != '->') {
         printLineStmt = new _ast.PrintLineStatement();
         this.parseSemicolon();
         this.current++;
@@ -444,12 +492,48 @@ function () {
       return whileStmt;
     }
     /**
-     * fuck a -> [2, 4, 6, 8, 10];
+     * fuck a -> 0;
+     * 
+     * for {
+     *     printLine -> a;
+     * 
+     *    if (a += 1) == 10 {
+     *        break;
+     *    }
+     * }
      */
 
   }, {
-    key: "parseListStatement",
-    value: function parseListStatement() {}
+    key: "parseForStatement",
+    value: function parseForStatement() {
+      this.current++;
+      this.parseLeftBrace();
+      this.refreshToken(this.current++);
+      var establishStmt = [];
+
+      while (!this.isToken('}')) {
+        this.parseWithTokenType(establishStmt);
+        this.refreshToken(this.current);
+      }
+
+      var forStmt = new _ast.ForStatement(establishStmt);
+      this.current++;
+      this.line++;
+      return forStmt;
+    }
+    /**
+     * break;
+     */
+
+  }, {
+    key: "parseBreakStatement",
+    value: function parseBreakStatement() {
+      this.current++;
+      this.parseSemicolon();
+      var breakStmt = new _ast.BreakStatement();
+      this.current++;
+      return breakStmt;
+    }
     /**
      * 是否匹配变量的值规则
      */
@@ -470,6 +554,19 @@ function () {
     value: function parseSemicolon() {
       if (this.tokens[this.current].value != ';') {
         throw new SyntaxError("\u7F3A\u5C11\u5206\u53F7 at line: ".concat(this.line + 1));
+      }
+
+      return true;
+    }
+    /**
+     * 检查当前是不是大括号
+     */
+
+  }, {
+    key: "parseLeftBrace",
+    value: function parseLeftBrace() {
+      if (this.tokens[this.current].value != '{') {
+        throw new SyntaxError("\u7F3A\u5C11\u5927\u62EC\u53F7 at line: ".concat(this.line + 1));
       }
 
       return true;

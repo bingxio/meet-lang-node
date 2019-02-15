@@ -1,6 +1,6 @@
 
-import { FuckStatement, PrintStatement, PrintLineStatement, IfStatement, 
-    WhileStatement, MinusStatement, PlusStatement, BinaryExpressionStatement, ListStatement, ForEachStatement } from '../ast/ast';
+import { FuckStatement, PrintStatement, PrintLineStatement, IfStatement, WhileStatement, MinusStatement, PlusStatement, BinaryExpressionStatement, 
+    ListStatement, ForEachStatement, BreakStatement, ForStatement } from '../ast/ast';
 
 let LETTER = /[a-z|A-Z]/;
 let NUMBER = /[0-9]/;
@@ -51,8 +51,15 @@ export class Parser {
             case 'while':
                 ast.push(this.parseWhileStatement());
                 break;
+            case 'for':
+                ast.push(this.parseForStatement());
+                break;
+            case 'break':
+                ast.push(this.parseBreakStatement());
+                break;
             case 'forEach':
                 ast.push(this.parseForEachStatement());
+                break;
             case '{':
                 break;
             case '}':
@@ -167,9 +174,35 @@ export class Parser {
      */
     parsePrintStatement() {
         this.current ++;
-        this.isPointer();
 
         let printStmt;
+
+        // 按制定的数量输出换行
+        if (NUMBER.test(this.currentToken().value)) {
+            printStmt = new PrintStatement('line', undefined, this.currentToken().value);
+
+            this.current ++;
+            this.parseSemicolon();
+            this.current ++;
+            this.line ++;
+
+            return printStmt;
+        }
+        
+        // 按变量输出指定个数的换行
+        if (LETTER.test(this.currentToken().value)) {
+            printStmt = new PrintStatement('line', this.currentToken().value, undefined);
+
+            this.current ++;
+            this.parseSemicolon();
+            this.current ++;
+            this.line ++;
+
+            return printStmt;
+        }
+
+        this.isPointer();
+
         let valueToken = this.tokens[++ this.current];
 
         if (valueToken.type == 'string') {
@@ -204,7 +237,31 @@ export class Parser {
 
         let printLineStmt;
 
-        if (this.tokens[this.current].value != '->') {
+        // 按制定的数量输出换行
+        if (NUMBER.test(this.currentToken().value)) {
+            printLineStmt = new PrintLineStatement('line', undefined, this.currentToken().value);
+
+            this.current ++;
+            this.parseSemicolon();
+            this.current ++;
+            this.line ++;
+
+            return printLineStmt;
+        }
+        
+        // 按变量输出指定个数的换行
+        if (LETTER.test(this.currentToken().value)) {
+            printLineStmt = new PrintLineStatement('line', this.currentToken().value, undefined);
+
+            this.current ++;
+            this.parseSemicolon();
+            this.current ++;
+            this.line ++;
+
+            return printLineStmt;
+        }
+
+        if (this.currentToken().value != '->') {
             printLineStmt = new PrintLineStatement();
 
             this.parseSemicolon();
@@ -449,10 +506,48 @@ export class Parser {
     }
 
     /**
-     * fuck a -> [2, 4, 6, 8, 10];
+     * fuck a -> 0;
+     * 
+     * for {
+     *     printLine -> a;
+     * 
+     *    if (a += 1) == 10 {
+     *        break;
+     *    }
+     * }
      */
-    parseListStatement() {
-        
+    parseForStatement() {
+        this.current ++;
+        this.parseLeftBrace();
+        this.refreshToken(this.current ++);
+
+        let establishStmt = [];
+
+        while (! this.isToken('}')) {
+            this.parseWithTokenType(establishStmt);
+            this.refreshToken(this.current);
+        }
+
+        let forStmt = new ForStatement(establishStmt);
+
+        this.current ++;
+        this.line ++;
+
+        return forStmt;
+    }
+
+    /**
+     * break;
+     */
+    parseBreakStatement() {
+        this.current ++;
+        this.parseSemicolon();
+
+        let breakStmt = new BreakStatement();
+
+        this.current ++;
+
+        return breakStmt;
     }
 
     /**
@@ -470,6 +565,16 @@ export class Parser {
     parseSemicolon() {
         if (this.tokens[this.current].value != ';') {
             throw new SyntaxError(`缺少分号 at line: ${this.line + 1}`);
+        }
+        return true;
+    }
+
+    /**
+     * 检查当前是不是大括号
+     */
+    parseLeftBrace() {
+        if (this.tokens[this.current].value != '{') {
+            throw new SyntaxError(`缺少大括号 at line: ${this.line + 1}`);
         }
         return true;
     }

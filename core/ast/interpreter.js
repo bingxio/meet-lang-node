@@ -1,10 +1,13 @@
 
 import { FuckStatement, PrintStatement, PrintLineStatement, IfStatement, 
-    WhileStatement, MinusStatement, PlusStatement, BinaryExpressionStatement, ListStatement, ForEachStatement } from "./ast";
+    WhileStatement, MinusStatement, PlusStatement, BinaryExpressionStatement, ListStatement, ForEachStatement, ForStatement, BreakStatement } from "./ast";
+import { threadId } from "worker_threads";
 
 let LETTERS = /[a-z|A-Z]/;
 let LIST_LPAREN = /[\[]/;
 let LIST_RPAREN = /[\]]/;
+
+let breakForStatement = 1;
 
 export class Interpreter {
 
@@ -40,6 +43,11 @@ export class Interpreter {
             this.evalPlusStatementNode();
         } else if (node instanceof ForEachStatement) {
             this.evalForEachStatementNode();
+        } else if (node instanceof ForStatement) {
+            this.evalForStatementNode();
+        } else if (node instanceof BreakStatement) {
+            breakForStatement = 0;
+            this.current ++;
         } else {
             throw new TypeError(`解释失败，未知的类型：${node.toString()}`);
         }
@@ -74,6 +82,30 @@ export class Interpreter {
      * { name: 'a' }
      */
     evalPrintStatementNode() {
+        if (this.node.type == 'line' && typeof(this.node.value) != 'undefined') {
+            for (let i = 0; i < parseInt(this.node.value); i ++) {
+                this.logWithOutLine(' ');
+            }
+            
+            this.current ++;
+            return;
+        }
+
+        if (this.node.type == 'line' && typeof(this.node.name) != 'undefined') {
+            let lineSize = this.env.get(this.node.name);
+
+            if (typeof(lineSize) == 'undefined') {
+                throw new SyntaxError(`找不到变量：${this.node.name}`);
+            }
+
+            for (let i = 0; i < parseInt(lineSize); i ++) {
+                this.logWithOutLine(' ');
+            }
+
+            this.current ++;
+            return;
+        }
+
         if(this.node.type == 'string') {
             this.logWithOutLine(this.node.value);
             this.current ++;
@@ -110,6 +142,30 @@ export class Interpreter {
      * { name: 'a' }
      */
     evalPrintLineStatementNode() {
+        if (this.node.type == 'line' && typeof(this.node.value) != 'undefined') {
+            for (let i = 0; i < parseInt(this.node.value); i ++) {
+                this.logWithLine('');
+            }
+
+            this.current ++;
+            return;
+        }
+
+        if (this.node.type == 'line' && typeof(this.node.name) != 'undefined') {
+            let lineSize = this.env.get(this.node.name);
+
+            if (typeof(lineSize) == 'undefined') {
+                throw new SyntaxError(`找不到变量：${this.node.name}`);
+            }
+
+            for (let i = 0; i < parseInt(lineSize); i ++) {
+                this.logWithLine('');
+            }
+
+            this.current ++;
+            return;
+        }
+
         if (this.node.type == 'string') {
             this.logWithLine(this.node.value);
             this.current ++;
@@ -306,15 +362,40 @@ export class Interpreter {
      * list[0] -> list -> 0
      */
     evalListExpressionNode(name) {
-        let listName = name.replace(/[^a-z|A-Z]/ig, '');
-        let listIndex = parseInt(name.replace(/[^0-9]/ig, ''));
+        let listName = '';
+        let listIndexName = '';
+        let current = 0;
+
+        while (current < name.length && name[current] != '[') {
+            listName += name[current ++];
+        }
+
+        current ++;
+
+        while (current < name.length && name[current] != ']') {
+            listIndexName += name[current ++];
+        }
+
+        // let listName = name.replace(/[^a-z|A-Z]/ig, '');
+        // let listIndex = parseInt(name.replace(/[^0-9]/ig, ''));
+
         let list = this.env.get(listName);
 
         if (typeof(list) == 'undefined') {
             throw new SyntaxError(`找不到列表：${listName}`);
         }
 
-        return list[1][listIndex];
+        if (LETTERS.test(listIndexName)) {
+            listIndexName = this.env.get(listIndexName);
+        }
+
+        if (typeof(listIndexName) == 'undefined') {
+            throw new SyntaxError(`找不到变量：${listIndexName}`);
+        }
+
+        listIndexName = parseInt(listIndexName);
+
+        return list[1][listIndexName];
     }
 
     /**
@@ -356,6 +437,24 @@ export class Interpreter {
             }
 
             condition = this.evalBinaryExpressionNode(whileStmt.condition);
+        }
+
+        this.current = tempCurrent;
+        this.current ++;
+    }
+
+    /**
+     * { establish: [Array] }
+     */
+    evalForStatementNode() {
+        let establish = this.node.establish;
+        let tempCurrent = this.current;
+
+        while (breakForStatement == 1) {
+            for (let i = 0; i < establish.length; i ++) {
+                this.refreshNodeWithOther(establish[i]);
+                this.evalWithNode(establish[i]);
+            }
         }
 
         this.current = tempCurrent;

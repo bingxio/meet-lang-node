@@ -7,6 +7,8 @@ exports.Interpreter = void 0;
 
 var _ast = require("./ast");
 
+var _worker_threads = require("worker_threads");
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -16,6 +18,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 var LETTERS = /[a-z|A-Z]/;
 var LIST_LPAREN = /[\[]/;
 var LIST_RPAREN = /[\]]/;
+var breakForStatement = 1;
 
 var Interpreter =
 /*#__PURE__*/
@@ -56,6 +59,11 @@ function () {
         this.evalPlusStatementNode();
       } else if (node instanceof _ast.ForEachStatement) {
         this.evalForEachStatementNode();
+      } else if (node instanceof _ast.ForStatement) {
+        this.evalForStatementNode();
+      } else if (node instanceof _ast.BreakStatement) {
+        breakForStatement = 0;
+        this.current++;
       } else {
         throw new TypeError("\u89E3\u91CA\u5931\u8D25\uFF0C\u672A\u77E5\u7684\u7C7B\u578B\uFF1A".concat(node.toString()));
       }
@@ -90,6 +98,30 @@ function () {
   }, {
     key: "evalPrintStatementNode",
     value: function evalPrintStatementNode() {
+      if (this.node.type == 'line' && typeof this.node.value != 'undefined') {
+        for (var i = 0; i < parseInt(this.node.value); i++) {
+          this.logWithOutLine(' ');
+        }
+
+        this.current++;
+        return;
+      }
+
+      if (this.node.type == 'line' && typeof this.node.name != 'undefined') {
+        var lineSize = this.env.get(this.node.name);
+
+        if (typeof lineSize == 'undefined') {
+          throw new SyntaxError("\u627E\u4E0D\u5230\u53D8\u91CF\uFF1A".concat(this.node.name));
+        }
+
+        for (var _i = 0; _i < parseInt(lineSize); _i++) {
+          this.logWithOutLine(' ');
+        }
+
+        this.current++;
+        return;
+      }
+
       if (this.node.type == 'string') {
         this.logWithOutLine(this.node.value);
         this.current++;
@@ -126,6 +158,30 @@ function () {
   }, {
     key: "evalPrintLineStatementNode",
     value: function evalPrintLineStatementNode() {
+      if (this.node.type == 'line' && typeof this.node.value != 'undefined') {
+        for (var i = 0; i < parseInt(this.node.value); i++) {
+          this.logWithLine('');
+        }
+
+        this.current++;
+        return;
+      }
+
+      if (this.node.type == 'line' && typeof this.node.name != 'undefined') {
+        var lineSize = this.env.get(this.node.name);
+
+        if (typeof lineSize == 'undefined') {
+          throw new SyntaxError("\u627E\u4E0D\u5230\u53D8\u91CF\uFF1A".concat(this.node.name));
+        }
+
+        for (var _i2 = 0; _i2 < parseInt(lineSize); _i2++) {
+          this.logWithLine('');
+        }
+
+        this.current++;
+        return;
+      }
+
       if (this.node.type == 'string') {
         this.logWithLine(this.node.value);
         this.current++;
@@ -340,15 +396,38 @@ function () {
   }, {
     key: "evalListExpressionNode",
     value: function evalListExpressionNode(name) {
-      var listName = name.replace(/[^a-z|A-Z]/ig, '');
-      var listIndex = parseInt(name.replace(/[^0-9]/ig, ''));
+      var listName = '';
+      var listIndexName = '';
+      var current = 0;
+
+      while (current < name.length && name[current] != '[') {
+        listName += name[current++];
+      }
+
+      current++;
+
+      while (current < name.length && name[current] != ']') {
+        listIndexName += name[current++];
+      } // let listName = name.replace(/[^a-z|A-Z]/ig, '');
+      // let listIndex = parseInt(name.replace(/[^0-9]/ig, ''));
+
+
       var list = this.env.get(listName);
 
       if (typeof list == 'undefined') {
         throw new SyntaxError("\u627E\u4E0D\u5230\u5217\u8868\uFF1A".concat(listName));
       }
 
-      return list[1][listIndex];
+      if (LETTERS.test(listIndexName)) {
+        listIndexName = this.env.get(listIndexName);
+      }
+
+      if (typeof listIndexName == 'undefined') {
+        throw new SyntaxError("\u627E\u4E0D\u5230\u53D8\u91CF\uFF1A".concat(listIndexName));
+      }
+
+      listIndexName = parseInt(listIndexName);
+      return list[1][listIndexName];
     }
     /**
      * { condition: [{ name: 'a', operator: '>', name: '20' }], establish: [Array], contrary: [Array] }
@@ -367,9 +446,9 @@ function () {
           this.evalWithNode(ifStmt.establish[i]);
         }
       } else if (typeof ifStmt.contrary != 'undefined') {
-        for (var _i = 0; _i < ifStmt.contrary.length; _i++) {
-          this.refreshNodeWithOther(ifStmt.contrary[_i]);
-          this.evalWithNode(ifStmt.contrary[_i]);
+        for (var _i3 = 0; _i3 < ifStmt.contrary.length; _i3++) {
+          this.refreshNodeWithOther(ifStmt.contrary[_i3]);
+          this.evalWithNode(ifStmt.contrary[_i3]);
         }
       }
 
@@ -394,6 +473,26 @@ function () {
         }
 
         condition = this.evalBinaryExpressionNode(whileStmt.condition);
+      }
+
+      this.current = tempCurrent;
+      this.current++;
+    }
+    /**
+     * { establish: [Array] }
+     */
+
+  }, {
+    key: "evalForStatementNode",
+    value: function evalForStatementNode() {
+      var establish = this.node.establish;
+      var tempCurrent = this.current;
+
+      while (breakForStatement == 1) {
+        for (var i = 0; i < establish.length; i++) {
+          this.refreshNodeWithOther(establish[i]);
+          this.evalWithNode(establish[i]);
+        }
       }
 
       this.current = tempCurrent;

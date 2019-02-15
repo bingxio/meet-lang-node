@@ -83,11 +83,17 @@ print -> 666;                       # print but no line feed #
 printLine -> 888;                   # print and line feed #
 printLine;                          # individual print line feed #
 printLine -> 'Hello World';
+print 3;                            # print 3 ' ' #
+printLine 3;                        # print 3 '\n' #
 
 Output:
 666888
 
 Hello World
+
+
+
+
 ```
 
 ### List
@@ -106,11 +112,16 @@ forEach -> name;    # 2 4 6 8 10 #
 printLine -> list[4];   # 10 #
 printLine -> listPlus;  # 18 #
 
+fuck a -> 0;
+
+printLine -> list[a];
+
 Output:
 2 4 6 8 10 
 meet programming language ! 
 10
 18
+2
 ```
 
 ### Conditional statement
@@ -173,6 +184,37 @@ Output:
 44
 46
 48
+```
+
+### Infinite Loop
+
+Use a for block to terminate the loop with a break statement.
+
+```
+fuck a -> 0;
+
+for {
+    printLine -> a;
+
+    if (a += 1) == 10 {
+        printLine -> 'run ok !';
+        
+        break;
+    }
+}
+
+Output:
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+run ok !
 ```
 
 ### Magic Identifier

@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.ListStatement = exports.WhileStatement = exports.IfStatement = exports.PlusStatement = exports.MinusStatement = exports.ForEachStatement = exports.PrintLineStatement = exports.PrintStatement = exports.FuckStatement = exports.BinaryExpressionStatement = void 0;
+exports.BreakStatement = exports.ForStatement = exports.ListStatement = exports.WhileStatement = exports.IfStatement = exports.PlusStatement = exports.MinusStatement = exports.ForEachStatement = exports.PrintLineStatement = exports.PrintStatement = exports.FuckStatement = exports.BinaryExpressionStatement = void 0;
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -47,7 +47,7 @@ function () {
   _createClass(FuckStatement, [{
     key: "toString",
     value: function toString() {
-      return "fuck ".concat(this.name, " -> ").concat(this.value);
+      return "fuck ".concat(this.name, " -> ").concat(this.value, ";");
     }
   }]);
 
@@ -70,7 +70,7 @@ function () {
   _createClass(PrintStatement, [{
     key: "toString",
     value: function toString() {
-      return "print -> ".concat(this.name);
+      return "print -> ".concat(this.name, ";");
     }
   }]);
 
@@ -93,7 +93,7 @@ function () {
   _createClass(PrintLineStatement, [{
     key: "toString",
     value: function toString() {
-      return "printLine -> ".concat(this.name);
+      return "printLine -> ".concat(this.name, ";");
     }
   }]);
 
@@ -114,7 +114,7 @@ function () {
   _createClass(ForEachStatement, [{
     key: "toString",
     value: function toString() {
-      return "forEach -> ".concat(this.name);
+      return "forEach -> ".concat(this.name, ";");
     }
   }]);
 
@@ -135,7 +135,7 @@ function () {
   _createClass(MinusStatement, [{
     key: "toString",
     value: function toString() {
-      return "minus -> ".concat(this.name);
+      return "minus -> ".concat(this.name, ";");
     }
   }]);
 
@@ -156,7 +156,7 @@ function () {
   _createClass(PlusStatement, [{
     key: "toString",
     value: function toString() {
-      return "plus -> ".concat(this.name);
+      return "plus -> ".concat(this.name, ";");
     }
   }]);
 
@@ -206,6 +206,7 @@ function () {
     key: "toString",
     value: function toString() {
       return "while ".concat(this.condition, " {\n            ").concat(this.establish, "\n        }");
+      s;
     }
   }]);
 
@@ -227,7 +228,7 @@ function () {
   _createClass(ListStatement, [{
     key: "toString",
     value: function toString() {
-      return "".concat(this.type, " list[").concat(this.value, "]");
+      return "".concat(this.type, " list[").concat(this.value, "];");
     }
   }]);
 
@@ -235,3 +236,45 @@ function () {
 }();
 
 exports.ListStatement = ListStatement;
+
+var ForStatement =
+/*#__PURE__*/
+function () {
+  function ForStatement(establish) {
+    _classCallCheck(this, ForStatement);
+
+    this.establish = establish;
+  }
+
+  _createClass(ForStatement, [{
+    key: "toString",
+    value: function toString() {
+      return "for {\n            ".concat(this.establish, "\n        }");
+    }
+  }]);
+
+  return ForStatement;
+}();
+
+exports.ForStatement = ForStatement;
+
+var BreakStatement =
+/*#__PURE__*/
+function () {
+  function BreakStatement() {
+    _classCallCheck(this, BreakStatement);
+
+    this.name = 'break';
+  }
+
+  _createClass(BreakStatement, [{
+    key: "toString",
+    value: function toString() {
+      return "".concat(this.name, ";");
+    }
+  }]);
+
+  return BreakStatement;
+}();
+
+exports.BreakStatement = BreakStatement;
