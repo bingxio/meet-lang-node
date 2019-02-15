@@ -217,6 +217,28 @@ Output:
 run ok !
 ```
 
+### Function
+
+function is interesting structural grammar, use `fun` identifier and `=>` char to define a function, use `fun` identifier and `->` char to call it.
+
+```
+fuck a -> 20;
+
+fun do => {
+    print -> 'this is call function, a = ';
+    printLine -> a;
+
+    fuck a -> 50;
+}
+
+fun -> do;
+fun -> do;
+
+Output:
+this is call function, a = 20
+this is call function, a = 50
+```
+
 ### Magic Identifier
 
 ```

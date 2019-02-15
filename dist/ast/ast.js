@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.BreakStatement = exports.ForStatement = exports.ListStatement = exports.WhileStatement = exports.IfStatement = exports.PlusStatement = exports.MinusStatement = exports.ForEachStatement = exports.PrintLineStatement = exports.PrintStatement = exports.FuckStatement = exports.BinaryExpressionStatement = void 0;
+exports.CallFunStatement = exports.DefineFunStatement = exports.BreakStatement = exports.ForStatement = exports.ListStatement = exports.WhileStatement = exports.IfStatement = exports.PlusStatement = exports.MinusStatement = exports.ForEachStatement = exports.PrintLineStatement = exports.PrintStatement = exports.FuckStatement = exports.BinaryExpressionStatement = void 0;
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -278,3 +278,46 @@ function () {
 }();
 
 exports.BreakStatement = BreakStatement;
+
+var DefineFunStatement =
+/*#__PURE__*/
+function () {
+  function DefineFunStatement(name, establish) {
+    _classCallCheck(this, DefineFunStatement);
+
+    this.name = name;
+    this.establish = establish;
+  }
+
+  _createClass(DefineFunStatement, [{
+    key: "toString",
+    value: function toString() {
+      return "fun ".concat(this.name, " => {\n            ").concat(this.establish, "\n        }");
+    }
+  }]);
+
+  return DefineFunStatement;
+}();
+
+exports.DefineFunStatement = DefineFunStatement;
+
+var CallFunStatement =
+/*#__PURE__*/
+function () {
+  function CallFunStatement(name) {
+    _classCallCheck(this, CallFunStatement);
+
+    this.name = name;
+  }
+
+  _createClass(CallFunStatement, [{
+    key: "toString",
+    value: function toString() {
+      return "fun -> ".concat(this.name);
+    }
+  }]);
+
+  return CallFunStatement;
+}();
+
+exports.CallFunStatement = CallFunStatement;

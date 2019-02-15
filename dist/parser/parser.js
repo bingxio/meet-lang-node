@@ -87,6 +87,10 @@ function () {
           ast.push(this.parseForEachStatement());
           break;
 
+        case 'fun':
+          ast.push(this.parseFunStatement());
+          break;
+
         case '{':
           break;
 
@@ -533,6 +537,48 @@ function () {
       var breakStmt = new _ast.BreakStatement();
       this.current++;
       return breakStmt;
+    }
+    /**
+     * fun a => {
+     *     printLine -> hello;
+     * }
+     */
+
+  }, {
+    key: "parseFunStatement",
+    value: function parseFunStatement() {
+      this.current++;
+      this.isLetter();
+      var name = this.currentToken();
+      var establish = [];
+
+      if (this.isToken('->')) {
+        this.current++;
+        var callFunStmt = new _ast.CallFunStatement(this.currentToken().value);
+        this.current++;
+        this.parseSemicolon();
+        this.current++;
+        return callFunStmt;
+      }
+
+      this.current++;
+
+      if (!this.isToken('=>')) {
+        throw new SyntaxError("\u7F3A\u5C11\u51FD\u6570\u6307\u9488\uFF1A".concat(this.currentToken()));
+      }
+
+      this.current++;
+      this.parseLeftBrace();
+      this.refreshToken(this.current++);
+
+      while (!this.isToken('}')) {
+        this.parseWithTokenType(establish);
+        this.refreshToken(this.current);
+      }
+
+      var funStmt = new _ast.DefineFunStatement(name.value, establish);
+      this.current++;
+      return funStmt;
     }
     /**
      * 是否匹配变量的值规则

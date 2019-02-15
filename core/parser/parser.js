@@ -1,6 +1,6 @@
 
 import { FuckStatement, PrintStatement, PrintLineStatement, IfStatement, WhileStatement, MinusStatement, PlusStatement, BinaryExpressionStatement, 
-    ListStatement, ForEachStatement, BreakStatement, ForStatement } from '../ast/ast';
+    ListStatement, ForEachStatement, BreakStatement, ForStatement, DefineFunStatement, CallFunStatement } from '../ast/ast';
 
 let LETTER = /[a-z|A-Z]/;
 let NUMBER = /[0-9]/;
@@ -59,6 +59,9 @@ export class Parser {
                 break;
             case 'forEach':
                 ast.push(this.parseForEachStatement());
+                break;
+            case 'fun':
+                ast.push(this.parseFunStatement());
                 break;
             case '{':
                 break;
@@ -548,6 +551,52 @@ export class Parser {
         this.current ++;
 
         return breakStmt;
+    }
+
+    /**
+     * fun a => {
+     *     printLine -> hello;
+     * }
+     */
+    parseFunStatement() {
+        this.current ++;
+        this.isLetter();
+
+        let name = this.currentToken();
+        let establish = [];
+
+        if (this.isToken('->')) {
+            this.current ++;
+
+            let callFunStmt = new CallFunStatement(this.currentToken().value);
+
+            this.current ++;
+            this.parseSemicolon();
+            this.current ++;
+
+            return callFunStmt;
+        }
+
+        this.current ++;
+
+        if (! this.isToken('=>')) {
+            throw new SyntaxError(`缺少函数指针：${this.currentToken()}`);
+        }
+
+        this.current ++;
+        this.parseLeftBrace();
+        this.refreshToken(this.current ++);
+
+        while (! this.isToken('}')) {
+            this.parseWithTokenType(establish);
+            this.refreshToken(this.current);
+        }
+
+        let funStmt = new DefineFunStatement(name.value, establish);
+
+        this.current ++;
+
+        return funStmt;
     }
 
     /**

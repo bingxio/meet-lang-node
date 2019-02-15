@@ -69,12 +69,12 @@ export class Lexer {
     
             /////////////////////////////////////////////
     
-            // if (char == '-' && this.code[++ this.current] == '>') {
-            //     this.newToken('operator', '->');            
-    
-            //     this.current ++;
-            //     continue;
-            // }
+            if (char == '=' && this.code[++ this.current] == '>') {
+                this.newToken('operator', '=>');
+                
+                this.current ++;
+                continue;
+            }
 
             if ((char == '+' || char == '*' || char == '/' || char == '>' || 
                  char == '<' || char == '!' || char == '=') && this.code[++ this.current] == '=') {

@@ -1,5 +1,3 @@
-#! /usr/bin/env node
-
 "use strict";
 
 var _lexer = require("./lexer/lexer");

@@ -1,7 +1,6 @@
 
-import { FuckStatement, PrintStatement, PrintLineStatement, IfStatement, 
-    WhileStatement, MinusStatement, PlusStatement, BinaryExpressionStatement, ListStatement, ForEachStatement, ForStatement, BreakStatement } from "./ast";
-import { threadId } from "worker_threads";
+import { FuckStatement, PrintStatement, PrintLineStatement, IfStatement, WhileStatement, MinusStatement, PlusStatement, BinaryExpressionStatement, 
+    ListStatement, ForEachStatement, ForStatement, BreakStatement, DefineFunStatement, CallFunStatement } from "./ast";
 
 let LETTERS = /[a-z|A-Z]/;
 let LIST_LPAREN = /[\[]/;
@@ -45,6 +44,10 @@ export class Interpreter {
             this.evalForEachStatementNode();
         } else if (node instanceof ForStatement) {
             this.evalForStatementNode();
+        } else if (node instanceof DefineFunStatement) {
+            this.evalDefineFunStatementNode();
+        } else if (node instanceof CallFunStatement) {
+            this.evalCallFunStatementNode();
         } else if (node instanceof BreakStatement) {
             breakForStatement = 0;
             this.current ++;
@@ -455,6 +458,45 @@ export class Interpreter {
                 this.refreshNodeWithOther(establish[i]);
                 this.evalWithNode(establish[i]);
             }
+        }
+
+        this.current = tempCurrent;
+        this.current ++;
+    }
+
+    /**
+     * { name: 'do', establish: [Array] }
+     */
+    evalDefineFunStatementNode() {
+        let funStmt = this.node;
+
+        this.env.set(funStmt.name, funStmt.establish);
+
+        this.current ++;
+    }
+
+    /**
+     * { name: 'do' }
+     */
+    evalCallFunStatementNode() {
+        let callFunStmt = this.node;
+        let establish = this.env.get(callFunStmt.name);
+        let tempCurrent = this.current;
+        let isVariable = this.env.get(callFunStmt.name);
+
+        if (typeof(isVariable) == 'undefined') {
+            throw new TypeError(`找不到函数：${callFunStmt.name}`);
+        } else if (typeof(isVariable) != 'object') {
+            throw new TypeError(`${callFunStmt.name} 是一个变量名，不是一个函数名`);
+        }
+
+        if (typeof(establish) == 'undefined') {
+            throw new TypeError(`找不到函数调用：${callFunStmt}`);
+        }
+
+        for (let i = 0; i < establish.length; i ++) {
+            this.refreshNodeWithOther(establish[i]);
+            this.evalWithNode(establish[i]);
         }
 
         this.current = tempCurrent;

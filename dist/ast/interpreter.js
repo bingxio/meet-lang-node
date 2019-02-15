@@ -7,7 +7,7 @@ exports.Interpreter = void 0;
 
 var _ast = require("./ast");
 
-var _worker_threads = require("worker_threads");
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -61,6 +61,10 @@ function () {
         this.evalForEachStatementNode();
       } else if (node instanceof _ast.ForStatement) {
         this.evalForStatementNode();
+      } else if (node instanceof _ast.DefineFunStatement) {
+        this.evalDefineFunStatementNode();
+      } else if (node instanceof _ast.CallFunStatement) {
+        this.evalCallFunStatementNode();
       } else if (node instanceof _ast.BreakStatement) {
         breakForStatement = 0;
         this.current++;
@@ -493,6 +497,47 @@ function () {
           this.refreshNodeWithOther(establish[i]);
           this.evalWithNode(establish[i]);
         }
+      }
+
+      this.current = tempCurrent;
+      this.current++;
+    }
+    /**
+     * { name: 'do', establish: [Array] }
+     */
+
+  }, {
+    key: "evalDefineFunStatementNode",
+    value: function evalDefineFunStatementNode() {
+      var funStmt = this.node;
+      this.env.set(funStmt.name, funStmt.establish);
+      this.current++;
+    }
+    /**
+     * { name: 'do' }
+     */
+
+  }, {
+    key: "evalCallFunStatementNode",
+    value: function evalCallFunStatementNode() {
+      var callFunStmt = this.node;
+      var establish = this.env.get(callFunStmt.name);
+      var tempCurrent = this.current;
+      var isVariable = this.env.get(callFunStmt.name);
+
+      if (typeof isVariable == 'undefined') {
+        throw new TypeError("\u627E\u4E0D\u5230\u51FD\u6570\uFF1A".concat(callFunStmt.name));
+      } else if (_typeof(isVariable) != 'object') {
+        throw new TypeError("".concat(callFunStmt.name, " \u662F\u4E00\u4E2A\u53D8\u91CF\u540D\uFF0C\u4E0D\u662F\u4E00\u4E2A\u51FD\u6570\u540D"));
+      }
+
+      if (typeof establish == 'undefined') {
+        throw new TypeError("\u627E\u4E0D\u5230\u51FD\u6570\u8C03\u7528\uFF1A".concat(callFunStmt));
+      }
+
+      for (var i = 0; i < establish.length; i++) {
+        this.refreshNodeWithOther(establish[i]);
+        this.evalWithNode(establish[i]);
       }
 
       this.current = tempCurrent;

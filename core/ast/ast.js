@@ -156,3 +156,28 @@ export class BreakStatement {
         return `${this.name};`;
     }
 }
+
+export class DefineFunStatement {
+
+    constructor(name, establish) {
+        this.name = name;
+        this.establish = establish;
+    }
+
+    toString() {
+        return `fun ${this.name} => {
+            ${this.establish}
+        }`;
+    }
+}
+
+export class CallFunStatement {
+
+    constructor(name) {
+        this.name = name;
+    }
+
+    toString() {
+        return `fun -> ${this.name}`;
+    }
+}
