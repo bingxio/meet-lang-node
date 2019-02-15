@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 
 import { Lexer } from './lexer/lexer';
 import { Parser } from './parser/parser';
@@ -26,7 +27,7 @@ let r1 = readline.createInterface({
 let environment = new Environment();
 
 if (process.argv.length == 2) {
-    process.stdout.write('Meet Programming Language REPL - Turaiiao 2019 - Email: 1171840237@qq.com \n> ');
+    process.stdout.write('Meet Programming Language v0.1.4 REPL - Turaiiao 2019 - Email: 1171840237@qq.com \n> ');
 
     r1.on('line', (input) => {
         if (input == 'exit') {

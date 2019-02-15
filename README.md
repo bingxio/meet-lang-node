@@ -9,6 +9,8 @@ This is a interpreter, it took me two days to write this project, just for fun !
 
 Writing in JavaScript, you should use `babel` to build it to es5, then run it.
 
+You can see the summary here: [Turaiiao's Blog](https://blog.xyiio.cn/2019/02/15/2019-02-15/)
+
 ### Run
 
 The first way, you can download it locally from `NPM`.

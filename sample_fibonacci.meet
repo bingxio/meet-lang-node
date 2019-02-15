@@ -2,19 +2,22 @@
 # 裴波那契数列 #
 
 fuck list -> [1 1];
-
+  
 fuck a -> 1;
 fuck b -> 20;
+    
+fun fibonacci => {
+  
+    while (a += 1) < b {
+        fuck c -> (a - 1);
+        fuck d -> (a - 2);
 
-fuck as -> (1 + 1);
+        set list[a] -> (list[c] + list[d]);
+    }
 
-while (a += 1) < b {
-    fuck c -> (a - 1);
-    fuck d -> (a - 2);
+    # 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, ... #
 
-    set list[a] -> (list[c] + list[d]);
+    forEach -> list;
 }
 
-# 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, ... #
-
-forEach -> list;
+fun -> fibonacci;

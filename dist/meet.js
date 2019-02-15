@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-
 "use strict";
 
 var _lexer = require("./lexer/lexer");
@@ -37,7 +36,7 @@ var r1 = _readline.default.createInterface({
 var environment = new _environment.Environment();
 
 if (process.argv.length == 2) {
-  process.stdout.write('Meet Programming Language REPL - Turaiiao 2019 - Email: 1171840237@qq.com \n> ');
+  process.stdout.write('Meet Programming Language v0.1.4 REPL - Turaiiao 2019 - Email: 1171840237@qq.com \n> ');
   r1.on('line', function (input) {
     if (input == 'exit') {
       process.exit();
