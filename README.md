@@ -44,13 +44,18 @@ Meet Programming Language REPL - Turaiiao 2019 - Email: 1171840237@qq.com
 > fuck a -> 20;
 > fuck b -> 'Hello World';
 > fuck c -> (2 - 10);
+> fuck d -> [1 2 3 4 5 6];
+> fuck e -> d[2];
 > printLine -> a;
 20
 > printLine -> b;
 Hello World
 > printLine -> c;
 -8
-> 
+> forEach -> d;
+1 2 3 4 5 6
+> printLine -> e;
+3
 ```
 
 The third way, you can run the specified file.  
@@ -75,6 +80,8 @@ fuck a -> 20;
 fuck a -> 20;
 fuck b -> 'Hello World';
 fuck c -> (20 + 20);        # with expression #
+fuck d -> [1 2 3 4 5 6];
+fuck e -> d[2];
 ```
 
 It defines variables to variable tables.
@@ -82,12 +89,17 @@ It defines variables to variable tables.
 ### Print to screen
 
 ```
+fuck a -> [2 4 6 8 10];
 print -> 666;                       # print but no line feed #
 printLine -> 888;                   # print and line feed #
 printLine;                          # individual print line feed #
 printLine -> 'Hello World';
 print 3;                            # print 3 ' ' #
 printLine 3;                        # print 3 '\n' #
+
+forEach -> a;
+
+printLine -> a[3];
 
 Output:
 666888
@@ -97,6 +109,8 @@ Hello World
 
 
 
+2 4 6 8 10
+8
 ```
 
 ### List
@@ -109,9 +123,12 @@ fuck name -> ['meet' 'programming' 'language' '!'];
 fuck list -> [2 4 6 8 10];
 fuck listPlus -> (list[3] + list[4]);
 
+fuck a -> name[0];
+
 forEach -> list;    # meet programming language ! #
 forEach -> name;    # 2 4 6 8 10 #
 
+printLine -> a;
 printLine -> list[4];   # 10 #
 printLine -> listPlus;  # 18 #
 
@@ -122,6 +139,7 @@ printLine -> list[a];
 Output:
 2 4 6 8 10 
 meet programming language ! 
+meet
 10
 18
 2

@@ -97,6 +97,12 @@ function () {
         return;
       }
 
+      if (LIST_LPAREN.test(value) && LIST_RPAREN.test(value) && LETTERS.test(value)) {
+        this.env.set(name, this.evalListExpressionNode(value));
+        this.current++;
+        return;
+      }
+
       this.env.set(name, value);
       this.current++;
     }
@@ -360,7 +366,7 @@ function () {
       throw new Error("\u8BBE\u7F6E\u65B0\u503C\u5931\u8D25\uFF1Alist_name -> ".concat(name, " new_value -> ").concat(value));
     }
     /**
-     * 传列表、解析表达式、返回布尔值或表达式值
+     * 传列表、解析二元表达式、返回布尔值或表达式值
      */
 
   }, {
@@ -369,37 +375,68 @@ function () {
       var evalLeft = ast[0];
       var evalOperator = ast[1];
       var evalRight = ast[2];
+      /*         if (evalLeft instanceof BinaryExpressionStatement) {
+                  evalLeft = this.evalBinaryExpressionNode([ evalLeft.left, evalLeft.operator, evalLeft.right ]);
+                  evalOperator = ast[1].value;
+                  evalRight = ast[2].value;
+              } else if (evalRight instanceof BinaryExpressionStatement) {
+                  evalLeft = ast[0].value;
+                  evalOperator = ast[1].value;
+                  evalRight = this.evalBinaryExpressionNode([ evalRight.left, evalRight.operator, evalRight.right ]);
+              } else {
+                  evalLeft = ast[0].value;
+                  evalOperator = ast[1].value;
+                  evalRight = ast[2].value;
+              }
+      
+              if (evalLeft.type == 'list') {
+                  evalLeft = this.evalListExpressionNode(evalLeft.value);
+      
+                  if (evalRight.type == 'list') {
+                      evalRight = this.evalListExpressionNode(evalRight.value);
+                  }
+      
+                  evalOperator = ast[1].value;
+              } else if (evalRight.type == 'list') {
+                  evalRight = this.evalListExpressionNode(evalRight.value);
+              }
+      
+              // 单独的 token，进行运算
+              if (evalLeft instanceof Token && evalLeft.type == 'number') {
+                  evalLeft = parseInt(evalLeft.value);
+              } else if (evalRight instanceof Token && evalRight.type == 'number') {
+                  evalRight = parseInt(evalRight.value);
+              }
+      
+              if (this.isVariableType(evalLeft)) evalLeft = this.env.get(evalLeft);
+              if (this.isVariableType(evalRight)) evalRight = this.env.get(evalRight);
+      
+              if (typeof(evalLeft) == 'undefined' || typeof(evalRight) == 'undefined') {
+                  throw new TypeError(`未知的变量类型：left = ${evalLeft}, operator = ${evalOperator}, right = ${evalRight}`);
+              }
+      
+              evalLeft = parseInt(evalLeft);
+              evalRight = parseInt(evalRight); */
 
       if (evalLeft instanceof _ast.BinaryExpressionStatement) {
         evalLeft = this.evalBinaryExpressionNode([evalLeft.left, evalLeft.operator, evalLeft.right]);
-        evalOperator = ast[1].value;
-        evalRight = ast[2].value;
-      } else if (evalRight instanceof _ast.BinaryExpressionStatement) {
-        evalLeft = ast[0].value;
-        evalOperator = ast[1].value;
-        evalRight = this.evalBinaryExpressionNode([evalRight.left, evalRight.operator, evalRight.right]);
+      } else if (evalLeft instanceof _token.Token && evalLeft.type == 'number') {
+        evalLeft = evalLeft.value;
+      } else if (evalLeft instanceof _token.Token && evalLeft.type == 'name') {
+        evalLeft = this.env.get(evalLeft.value);
       } else if (evalLeft.type == 'list') {
         evalLeft = this.evalListExpressionNode(evalLeft.value);
-
-        if (evalRight.type == 'list') {
-          evalRight = this.evalListExpressionNode(evalRight.value);
-        }
-
-        evalOperator = ast[1].value;
-      } else {
-        evalLeft = ast[0].value;
-        evalOperator = ast[1].value;
-        evalRight = ast[2].value;
       }
 
-      if (evalLeft instanceof _token.Token && evalLeft.type == 'number') {
-        evalLeft = parseInt(evalLeft.value);
+      if (evalRight instanceof _ast.BinaryExpressionStatement) {
+        evalRight = this.evalBinaryExpressionNode([evalRight.left, evalRight.operator, evalRight.right]);
       } else if (evalRight instanceof _token.Token && evalRight.type == 'number') {
-        evalRight = parseInt(evalRight.value);
+        evalRight = evalRight.value;
+      } else if (evalRight instanceof _token.Token && evalRight.type == 'name') {
+        evalRight = this.env.get(evalRight.value);
+      } else if (evalRight.type == 'list') {
+        evalRight = this.evalListExpressionNode(evalRight.value);
       }
-
-      if (this.isVariableType(evalLeft)) evalLeft = this.env.get(evalLeft);
-      if (this.isVariableType(evalRight)) evalRight = this.env.get(evalRight);
 
       if (typeof evalLeft == 'undefined' || typeof evalRight == 'undefined') {
         throw new TypeError("\u672A\u77E5\u7684\u53D8\u91CF\u7C7B\u578B\uFF1Aleft = ".concat(evalLeft, ", operator = ").concat(evalOperator, ", right = ").concat(evalRight));
@@ -408,7 +445,7 @@ function () {
       evalLeft = parseInt(evalLeft);
       evalRight = parseInt(evalRight);
 
-      switch (evalOperator) {
+      switch (evalOperator.value) {
         case '>':
           return evalLeft > evalRight;
 
@@ -428,35 +465,35 @@ function () {
           return evalLeft != evalRight;
 
         case '+':
-          return evalLeft + evalRight;
+          return parseInt(evalLeft + evalRight);
 
         case '-':
-          return evalLeft - evalRight;
+          return parseInt(evalLeft - evalRight);
 
         case '*':
-          return evalLeft * evalRight;
+          return parseInt(evalLeft * evalRight);
 
         case '/':
-          return evalLeft / evalRight;
+          return parseInt(evalLeft / evalRight);
 
         case '%':
-          return evalLeft % evalRight;
+          return parseInt(evalLeft % evalRight);
 
         case '+=':
           this.env.set(ast[0].value, evalLeft += evalRight);
-          return ast[0].value;
+          return this.env.get(ast[0].value);
 
         case '-=':
           this.env.set(ast[0].value, evalLeft -= evalRight);
-          return ast[0].value;
+          return this.env.get(ast[0].value);
 
         case '*=':
           this.env.set(ast[0].value, evalLeft *= evalRight);
-          return ast[0].value;
+          return this.env.get(ast[0].value);
 
         case '/=':
           this.env.set(ast[0].value, evalLeft /= evalRight);
-          return ast[0].value;
+          return this.env.get(ast[0].value);
 
         default:
           throw new TypeError("\u672A\u77E5\u7684\u64CD\u4F5C\u6570\uFF1A".concat(evalOperator));
@@ -610,6 +647,7 @@ function () {
     value: function evalForStatementNode() {
       var establish = this.node.establish;
       var tempCurrent = this.current;
+      breakForStatement = 1; // 如果有多个无限循环，为下一个做准备
 
       while (breakForStatement == 1) {
         for (var i = 0; i < establish.length; i++) {

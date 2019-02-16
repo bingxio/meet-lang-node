@@ -1,5 +1,21 @@
 
-
+#
 fuck list -> [1 2 3 4 5];
+
+forEach -> list;
+
 fuck list -> ['meet' 'programming' 'language'];
 
+forEach -> list;
+
+fuck a -> 20;
+
+if a > 20 {
+    printLine -> a;
+}
+
+printLine -> a;
+
+#
+
+fuck list -> ['meet' 'programming' 'language'];

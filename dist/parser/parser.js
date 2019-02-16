@@ -111,6 +111,7 @@ function () {
     /**
      * fuck a -> 200;
      * fuck a -> (20 + 5);
+     * fuck a -> list[0];
      * fuck a -> 'Hello World';
      * fuck a -> [2 4 6 8 10];
      * fuck a -> (list[a] + list[b])

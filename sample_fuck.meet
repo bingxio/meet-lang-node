@@ -40,3 +40,7 @@ fuck d -> 2;
 print d;        # print 2 ' ' #
 print -> 'hello';
 printLine d;    # print 2 '\n' #
+
+fuck a -> [2 4 6 8 10];
+
+fuck a -> a[0];
